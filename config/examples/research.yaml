@@ -1,0 +1,38 @@
+# Example: Research swarm with custom roles
+#
+# Usage: "swarm research authentication patterns"
+#
+# Define ad-hoc roles for parallel research on different aspects
+# of a topic.
+
+roles:
+  auth-patterns:
+    description: "Research authentication implementation patterns"
+    subagent_type: Explore
+    prompt: |
+      Research authentication patterns in this codebase:
+      - Current auth implementation and flow
+      - Session management approach
+      - Token handling and refresh logic
+      Send findings to the team lead when complete.
+
+  auth-security:
+    description: "Research authentication security posture"
+    subagent_type: Explore
+    prompt: |
+      Evaluate authentication security:
+      - Password hashing and storage
+      - Rate limiting and brute force protection
+      - CSRF and session fixation protections
+      Send findings to the team lead when complete.
+
+  auth-standards:
+    description: "Research industry auth standards compliance"
+    subagent_type: Explore
+    prompt: |
+      Compare against industry standards:
+      - OWASP authentication guidelines
+      - OAuth 2.0 / OpenID Connect compliance
+      - NIST 800-63 digital identity guidelines
+      Use web search for current standards references.
+      Send findings to the team lead when complete.

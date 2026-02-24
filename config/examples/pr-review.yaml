@@ -1,0 +1,12 @@
+# Example: PR review swarm
+#
+# Usage: "swarm review this PR with pr-review preset"
+#
+# Dispatches three specialists in parallel to review code changes
+# from security, performance, and quality perspectives.
+
+preset: pr-review
+# Override target (optional — skill auto-detects from context):
+# target: "src/auth/"
+# Override model for all roles (optional):
+# model: haiku
