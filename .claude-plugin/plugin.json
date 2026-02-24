@@ -1,0 +1,13 @@
+{
+  "name": "the_swarm",
+  "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ben Alkov",
+    "url": "https://github.com/ben-alkov"
+  },
+  "homepage": "https://github.com/ben-alkov/the_swarm",
+  "repository": "https://github.com/ben-alkov/the_swarm",
+  "license": "GPL3",
+  "keywords": ["swarm", "parallel", "specialists", "review", "orchestration", "teams"]
+}

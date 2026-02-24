@@ -1,0 +1,20 @@
+{
+  "name": "the_swarm",
+  "owner": {
+    "name": "Ben Alkov",
+    "email": "ben.alkov@gmail.com"
+  },
+  "metadata": {
+    "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+  "name": "the_swarm",
+      "source": "./",
+      "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
+      "category": "",
+      "tags": ["swarm", "parallel", "specialists", "review", "orchestration", "teams", "claude-code"]
+    }
+  ]
+}
