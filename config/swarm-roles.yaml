@@ -79,6 +79,24 @@ roles:
 
       Send your findings to the team lead when complete.
 
+  implementer:
+    description: "Implement code changes in an isolated worktree"
+    subagent_type: general-purpose
+    isolation: worktree
+    prompt: |
+      You are an implementation specialist working in an isolated worktree.
+      You have full read/write access to the repository.
+
+      For your assigned task:
+      - Read and understand the relevant code
+      - Make the requested changes
+      - Verify your changes work (run tests if applicable)
+      - Commit your changes with a clear commit message
+
+      Report what you changed and any issues encountered.
+
+      Send your findings to the team lead when complete.
+
 presets:
   pr-review:
     description: "Standard PR review with three specialists"
@@ -91,3 +109,7 @@ presets:
   security-audit:
     description: "Deep security review only"
     roles: [security-reviewer]
+
+  implement-and-review:
+    description: "Implementation with concurrent review"
+    roles: [implementer, quality-reviewer]
