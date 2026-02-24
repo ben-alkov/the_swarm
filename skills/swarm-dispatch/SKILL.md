@@ -26,6 +26,7 @@ present. No file edits, no implementation — analysis only.
 - Single-perspective tasks (use a regular agent instead)
 - Sequential dependencies between workers
 - Simple questions or explorations
+- Tasks requiring file edits without `isolation: worktree` configured on the role
 - A team already exists in the current session
 
 ## Checklist
@@ -134,6 +135,19 @@ For each role, spawn one teammate via `Task` with:
 - `isolation`: from the role config (if specified)
 - `run_in_background`: `true`
 - `prompt`: composed from three parts (see below)
+
+### Isolation Handling
+
+Before spawning, check each role's `isolation` field:
+
+- If `isolation: worktree` is set:
+  - Override `subagent_type` to `general-purpose` (even if the role says
+    `Explore` or omits the field)
+  - Print a note: `Role {name}: using general-purpose (worktree isolation
+    requires write access)`
+  - Pass `isolation: "worktree"` to the `Task` tool call
+- If `isolation` is absent: use the role's `subagent_type` as-is (default:
+  `Explore`), do not pass `isolation` to Task
 
 ### Prompt Construction
 
