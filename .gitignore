@@ -1,0 +1,21 @@
+# UN-excludes overriding .gitignore_global
+
+!.agents/*
+!.claude/*
+!.agents/plans/*
+
+!AGENTS.md
+!CLAUDE.md
+
+# Excludes
+
+.idea/
+.osgrep/
+.private-journal/
+.vscode/
+
+.agents/settings.local.json
+.agents/worktrees/
+*.swp
+*.swo
+.DS_Store
