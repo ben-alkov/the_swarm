@@ -1,11 +1,17 @@
 ---
-name: swarm-dispatch
-description: "Dispatch parallel read-only specialists (reviewers, researchers, analyzers) against a target. Use when the user wants concurrent multi-perspective analysis, team review, or parallel research."
+name: swarm-fan-out
+description: >-
+  Fan-out parallel specialists for concurrent analysis. Dispatch
+  read-only reviewers, researchers, and analyzers against a target.
 ---
 
-# Swarm Dispatch
+# Fan-Out Orchestration
 
 ## Overview
+
+> This skill is invoked by the `swarm` dispatcher. You should
+> already have the goal, target, and selected roles from the
+> dispatcher. If invoked directly, start from step 1.
 
 Orchestrate parallel specialist agents for concurrent analysis of code,
 PRs, or topics. You become the team lead, spawn read-only specialists,
@@ -100,9 +106,9 @@ Do NOT spawn anything until the user confirms. No surprise token costs.
 
 ### Team Naming
 
-Use format: `swarm-{goal-slug}-{timestamp}`
+Use format: `swarm-fan-out-{goal-slug}-{timestamp}`
 
-Example: `swarm-pr-review-1708200000`
+Example: `swarm-fan-out-pr-review-1708200000`
 
 Generate the timestamp from the current date/time as a Unix epoch.
 
