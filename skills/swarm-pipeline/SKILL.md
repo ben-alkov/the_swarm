@@ -1,8 +1,325 @@
 ---
 name: swarm-pipeline
-description: "Pipeline orchestration — see design doc for details"
+description: >-
+  Pipeline and task-graph orchestration. Sequential stages with
+  dependency edges — linear chain or arbitrary DAG.
 ---
 
-# Pipeline Orchestration
+# Pipeline / Task Graph Orchestration
 
-*Implementation pending — see design doc.*
+## Overview
+
+> This skill is invoked by the `swarm` dispatcher. You should
+> already have the goal, target, and selected roles from the
+> dispatcher. If invoked directly, start from step 1.
+
+Orchestrate sequential stages with dependency edges. Handles two
+config shapes:
+
+- **`pattern: pipeline`** with `stages` array — linear chain where
+  each stage blocks the next
+- **`pattern: task-graph`** with `nodes` map — arbitrary DAG with
+  `depends_on` edges supporting fan-in and fan-out
+
+Pipeline is a degenerate task-graph (linear topology). Both use the
+same `blocks`/`blockedBy` primitives for automatic stage
+transitions.
+
+## When to Use
+
+- Multi-stage workflows where output feeds the next stage
+- Implementation + review chains
+- Database migrations with dependent steps
+- Any workflow with sequential dependencies
+
+## When NOT to Use
+
+- All tasks are independent (use fan-out or swarm)
+- Tasks need structured merging with a dedicated reducer
+  (use map-reduce)
+- Competing approaches (use speculative)
+
+## Checklist
+
+You MUST complete these steps in order:
+
+1. **Identify goal and target**
+2. **Read config and determine topology**
+3. **Build dependency graph**
+4. **Check for existing team**
+5. **Confirm with user**
+6. **Create team and tasks**
+7. **Spawn agents**
+8. **Relay context between stages**
+9. **Collect findings**
+10. **Synthesize and present report**
+11. **Await user instructions**
+12. **Shutdown and cleanup**
+
+## Step 1: Identify Goal and Target
+
+Determine from the user's request (or dispatcher context):
+
+- **Goal**: What is being done?
+- **Target**: Which files, directories, or scope?
+
+If unclear, ask the user. Do not guess scope.
+
+## Step 2: Read Config and Determine Topology
+
+Read `~/.claude/plugins/swarm/config/swarm-roles.yaml` to get the
+preset config.
+
+Determine the topology:
+
+- If preset has `stages` array → **pipeline** (linear chain)
+- If preset has `nodes` map → **task-graph** (arbitrary DAG)
+
+## Step 3: Build Dependency Graph
+
+### For Pipeline (`stages`)
+
+Convert the linear `stages` array into a dependency chain:
+
+```text
+stage[0] → stage[1] → stage[2] → ...
+```
+
+Each stage blocks the next. Stages with multiple roles create
+parallel tasks within the stage (fan-out within a stage, sequential
+between stages).
+
+### For Task Graph (`nodes`)
+
+Read each node's `depends_on` list to build the DAG:
+
+```text
+analyze → migrate-users ──→ validate
+       → migrate-orders ──↗
+```
+
+Validate the graph: no cycles, all `depends_on` references point
+to existing nodes.
+
+## Step 4: Check for Existing Team
+
+Only one team can exist per session. If a team exists: warn the
+user and offer to clean it up first (`TeamDelete`).
+
+## Step 5: Confirm with User
+
+Present the dispatch plan using `AskUserQuestion`:
+
+```text
+I'll dispatch a {pipeline|task-graph} with these stages:
+
+Stage 1: {name} — {roles}
+  ↓
+Stage 2: {name} — {roles} (blocked by: stage 1)
+  ↓
+Stage 3: {name} — {roles} (blocked by: stage 2)
+
+Target: {files/scope}
+
+Proceed?
+```
+
+For task-graph, show the DAG structure with dependency arrows.
+
+Do NOT spawn anything until the user confirms.
+
+## Step 6: Create Team and Tasks
+
+### Team Naming
+
+- Pipeline: `swarm-pipeline-{goal-slug}-{timestamp}`
+- Task Graph: `swarm-task-graph-{goal-slug}-{timestamp}`
+
+Generate the timestamp from the current date/time as a Unix epoch.
+
+### Create Team
+
+```text
+TeamCreate with team_name: "swarm-{topology}-{goal-slug}-{ts}"
+```
+
+### Create Tasks
+
+One task per role per stage/node via `TaskCreate`:
+
+- `subject`: imperative title including stage name
+- `description`: detailed scope, target, stage context, reporting
+  expectations
+- `activeForm`: present-continuous spinner label
+
+Set dependencies via `TaskUpdate`:
+
+- For pipeline: each stage's tasks have `addBlockedBy` pointing to
+  the previous stage's tasks
+- For task-graph: each node's tasks have `addBlockedBy` matching
+  the node's `depends_on` references
+
+First stage / root nodes have no blockers — they start immediately.
+
+## Step 7: Spawn Agents
+
+For each role in each stage/node, spawn one agent via `Task` with:
+
+- `team_name`: the team name from step 6
+- `name`: `{stage-name}-{role-name}` (e.g., `implement-implementer`)
+- `subagent_type`: from the role config
+- `model`: from the role config (if specified)
+- `isolation`: from the role config (if specified — see isolation
+  handling below)
+- `run_in_background`: `true`
+- `prompt`: composed from the parts below
+
+### Isolation Handling
+
+Before spawning, check each role's `isolation` field:
+
+- If `isolation: worktree` is set:
+  - Override `subagent_type` to `general-purpose`
+  - Print a note: `Role {name}: using general-purpose (worktree
+    isolation requires write access)`
+  - Pass `isolation: "worktree"` to the `Task` tool call
+- If `isolation` is absent: use the role's `subagent_type` as-is
+
+### Prompt Construction
+
+#### Part 1: Identity and Stage Instructions
+
+```markdown
+Your name is {name}. You are part of team {team_name}.
+
+You are working on stage "{stage-name}" of a {pipeline|task-graph}.
+
+Instructions:
+- Claim your task from TaskList, mark it in_progress, then
+  completed when done.
+- Send your findings to the team lead via SendMessage when
+  complete.
+- Include a summary field in your message (5-10 words).
+
+Your task may be blocked by earlier stages. If your task is
+blocked, wait — it will unblock automatically when dependencies
+complete.
+```
+
+#### Part 2: Role Prompt
+
+The `prompt` field from `swarm-roles.yaml` for this role.
+
+#### Part 3: Goal, Target, and Upstream Context
+
+```markdown
+## Goal
+
+{goal description from user}
+
+## Target
+
+{target files, scope, or context}
+
+## Upstream Context
+
+{forwarded findings from completed predecessor stages — empty for
+first stage, populated by lead relay in step 8}
+
+{any additional context the user provided}
+```
+
+## Step 8: Relay Context Between Stages
+
+This is the lead's core responsibility in pipeline orchestration.
+
+When a stage completes (all its tasks are done and agents have
+sent findings):
+
+1. Collect all findings from that stage's agents
+2. Forward the findings to the next stage's agents via
+   `SendMessage`
+3. Include the stage name and a summary of what was done
+
+### Context Passing Mechanisms
+
+- **SendMessage relay** (default): lead forwards findings between
+  stages as messages
+- **Worktree chain** (when roles have `isolation: worktree`): each
+  stage works on the branch from the previous stage. The lead
+  includes the branch name in the forwarded context so the next
+  stage can check it out.
+
+## Step 9: Collect Findings
+
+As each stage completes, its agents send findings via
+`SendMessage`. The lead accumulates findings across all stages.
+
+**Normal flow:** stages complete sequentially (or per the DAG).
+Each stage's agents go idle after sending.
+
+**Error handling:**
+
+- Stage agent idle without findings: send a message asking for
+  status
+- Blocked task not unblocking: check if predecessor is truly
+  complete, intervene if stuck
+- Stage failure: notify user, ask whether to continue with
+  remaining stages or abort
+
+## Step 10: Synthesize and Present Report
+
+Once all stages are complete:
+
+Synthesize findings into a unified report that shows the
+progression through stages.
+
+### Report Structure
+
+```markdown
+## Pipeline Analysis Report
+
+**Goal:** {goal}
+**Target:** {target}
+**Topology:** {pipeline|task-graph}
+
+### Stage: {stage-1-name}
+{findings from stage 1}
+
+### Stage: {stage-2-name}
+{findings from stage 2, including how they built on stage 1}
+
+...
+
+### Summary
+{brief overall assessment — how the pipeline progressed and
+final outcome}
+```
+
+## Step 11: Await User Instructions
+
+After presenting the report:
+
+- Do NOT fix issues agents found
+- Do NOT shut down the team automatically
+- Do NOT proceed past reporting without user input
+
+Wait for the user to decide next steps.
+
+## Step 12: Shutdown and Cleanup
+
+When the user indicates they're done:
+
+1. Send `shutdown_request` to each agent via `SendMessage`
+2. Wait for `shutdown_response` from each
+3. Call `TeamDelete` to clean up
+
+## Design Constraints
+
+- **Sequential execution**: stages run in dependency order
+- **Parallel within stages**: multiple roles in one stage run
+  concurrently
+- **Lead relays context**: the lead is responsible for forwarding
+  findings between stages
+- **One team per session**: check before creating
+- **User controls lifecycle**: never auto-shutdown
