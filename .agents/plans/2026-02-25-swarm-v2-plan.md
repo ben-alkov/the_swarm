@@ -1,0 +1,753 @@
+# Swarm v2 Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans
+> to implement this plan task-by-task.
+
+**Goal:** Expand the swarm plugin from fan-out-only to a multi-pattern
+orchestration framework (Swarm, Pipeline/TaskGraph, Map-Reduce,
+Speculative, Watchdog).
+
+**Architecture:** Dispatcher skill routes to pattern-specific sub-skills
+based on the preset's `pattern` field. Config schema is additive — v1
+presets work unchanged. Hooks become pattern-aware via team name
+convention.
+
+**Tech Stack:** Markdown (skills), YAML (config), Bash (hooks). No
+runtime code, no tests.
+
+---
+
+## Task 1: Scaffold v2 directory structure
+
+Create the new skill directories and move the v1 skill to its new
+location.
+
+**Files:**
+
+- Move: `skills/swarm-dispatch/SKILL.md`
+  to `skills/swarm-fan-out/SKILL.md`
+- Create: `skills/swarm/SKILL.md` (dispatcher)
+- Create: `skills/swarm-swarm/SKILL.md` (empty placeholder)
+- Create: `skills/swarm-pipeline/SKILL.md` (empty placeholder)
+- Create: `skills/swarm-map-reduce/SKILL.md` (empty placeholder)
+- Create: `skills/swarm-speculative/SKILL.md` (empty placeholder)
+- Create: `hooks/scripts/lib/` directory
+
+#### Step 1: Create directories
+
+```bash
+mkdir -p skills/swarm
+mkdir -p skills/swarm-fan-out
+mkdir -p skills/swarm-swarm
+mkdir -p skills/swarm-pipeline
+mkdir -p skills/swarm-map-reduce
+mkdir -p skills/swarm-speculative
+mkdir -p hooks/scripts/lib
+```
+
+#### Step 2: Move v1 skill
+
+```bash
+git mv skills/swarm-dispatch/SKILL.md skills/swarm-fan-out/SKILL.md
+rmdir skills/swarm-dispatch
+```
+
+#### Step 3: Create placeholder SKILL.md files
+
+Create empty placeholders for each new pattern skill with frontmatter
+only (name, description). These get filled in by later tasks.
+
+For each of `swarm-swarm`, `swarm-pipeline`, `swarm-map-reduce`,
+`swarm-speculative`, create a minimal SKILL.md:
+
+```markdown
+---
+name: swarm-{pattern}
+description: "{Pattern} orchestration — see design doc for details"
+---
+
+# {Pattern} Orchestration
+
+*Implementation pending — see design doc.*
+```
+
+#### Step 4: Commit
+
+```bash
+git add skills/
+git commit -m "refactor(skills): scaffold v2 directory structure
+
+Move swarm-dispatch to swarm-fan-out and create placeholder
+directories for dispatcher and pattern sub-skills."
+```
+
+---
+
+## Task 2: Write the dispatcher skill
+
+The thin router that reads a preset's `pattern` field and instructs
+Claude to follow the corresponding pattern skill.
+
+**Files:**
+
+- Create: `skills/swarm/SKILL.md`
+
+#### Step 1: Write the dispatcher
+
+```markdown
+---
+name: swarm
+description: >-
+  Dispatch a swarm using any orchestration pattern. Routes to the
+  appropriate pattern-specific skill based on the selected preset.
+---
+
+# Swarm Dispatcher
+
+## Overview
+
+Route swarm requests to the appropriate pattern skill. Read the
+preset config, determine the pattern, and follow the corresponding
+skill.
+
+## Steps
+
+1. **Identify goal and target** from the user's request. If unclear,
+   ask.
+
+2. **Read roles config** from
+   `~/.claude/plugins/swarm/config/swarm-roles.yaml`.
+
+3. **Select preset or roles** using the same priority as v1:
+   - User specifies a preset name -> use it
+   - User specifies individual role names -> use those (fan-out)
+   - User describes what they want -> match to preset/roles
+   - Default for "review" -> `pr-review` preset
+
+4. **Determine pattern** from the selected preset's `pattern` field.
+   If absent, default to `fan-out`.
+
+5. **Route to pattern skill** — read and follow the corresponding
+   skill:
+
+   | Pattern | Skill |
+   |---|---|
+   | `fan-out` (or absent) | `swarm-fan-out` |
+   | `swarm` | `swarm-swarm` |
+   | `pipeline` | `swarm-pipeline` |
+   | `task-graph` | `swarm-pipeline` |
+   | `map-reduce` | `swarm-map-reduce` |
+   | `speculative` | `swarm-speculative` |
+
+   Read the skill file and follow its checklist from step 1.
+   Pass through: goal, target, selected roles/preset, and any
+   user context.
+```
+
+#### Step 2: Verify content reads correctly
+
+```bash
+cat skills/swarm/SKILL.md
+```
+
+Verify: frontmatter is valid, routing table is complete, no
+references to nonexistent patterns.
+
+#### Step 3: Commit
+
+```bash
+git add skills/swarm/SKILL.md
+git commit -m "feat(skill): add dispatcher for multi-pattern routing
+
+Thin router reads preset pattern field and delegates to the
+appropriate pattern-specific skill."
+```
+
+---
+
+## Task 3: Update swarm-fan-out skill for v2 compatibility
+
+The moved `swarm-fan-out/SKILL.md` needs minor updates: updated
+frontmatter name, team naming convention change, and a note about
+the dispatcher.
+
+**Files:**
+
+- Modify: `skills/swarm-fan-out/SKILL.md`
+
+#### Step 1: Update frontmatter
+
+Change `name: swarm-dispatch` to `name: swarm-fan-out`. Update
+description if needed.
+
+#### Step 2: Update team naming
+
+Find team naming references. Change from
+`swarm-{goal-slug}-{timestamp}` to
+`swarm-fan-out-{goal-slug}-{timestamp}`.
+
+#### Step 3: Add dispatcher note
+
+Add a note at the top of the Overview section:
+
+```markdown
+> This skill is invoked by the `swarm` dispatcher. You should
+> already have the goal, target, and selected roles from the
+> dispatcher. If invoked directly, start from step 1.
+```
+
+#### Step 4: Commit
+
+```bash
+git add skills/swarm-fan-out/SKILL.md
+git commit -m "feat(skill): adapt fan-out skill for v2 dispatcher
+
+Update frontmatter, team naming convention, and add dispatcher
+integration note."
+```
+
+---
+
+## Task 4: Update config schema with v2 roles and presets
+
+Add new roles (mapper, reducer, judge, monitor) and pattern-aware
+presets to `swarm-roles.yaml`.
+
+**Files:**
+
+- Modify: `config/swarm-roles.yaml`
+
+#### Step 1: Add `pattern: fan-out` to existing presets
+
+Add `pattern: fan-out` to `pr-review`, `full-review`,
+`security-audit`, and `implement-and-review`. This makes the
+implicit default explicit.
+
+#### Step 2: Add new v2 roles
+
+Add these roles after the existing ones:
+
+- `mapper` — Explore, processes one input chunk
+- `reducer` — general-purpose, merges mapper outputs
+- `judge` — general-purpose, isolation: worktree, evaluates
+  competing approaches
+- `monitor` — Explore, watches TaskList for anomalies
+
+Use the role definitions from the design doc
+(`.agents/plans/2026-02-25-swarm-v2-design.md`, lines 153-213).
+
+#### Step 3: Add v2 presets
+
+Add these presets after the existing ones:
+
+- `implement-then-review` — pattern: pipeline, two stages
+- `multi-stage-migration` — pattern: task-graph, DAG with nodes
+- `large-codebase-audit` — pattern: map-reduce
+- `best-of-three` — pattern: speculative
+
+Use the preset definitions from the design doc (lines 241-283).
+
+#### Step 4: Validate YAML syntax
+
+```bash
+python3 -c "import yaml; yaml.safe_load(open('config/swarm-roles.yaml'))"
+```
+
+Expected: no output (valid YAML).
+
+#### Step 5: Commit
+
+```bash
+git add config/swarm-roles.yaml
+git commit -m "feat(config): v2 roles and pattern-aware presets
+
+Add mapper, reducer, judge, monitor roles. Add pipeline,
+task-graph, map-reduce, speculative presets with pattern field.
+Existing presets gain explicit pattern: fan-out."
+```
+
+---
+
+## Task 5: Write swarm-swarm skill (self-claiming pattern)
+
+The self-claiming pool pattern where workers race to claim from a
+shared task pool.
+
+**Files:**
+
+- Create: `skills/swarm-swarm/SKILL.md`
+
+#### Step 1: Write the skill
+
+The skill follows this checklist:
+
+1. Identify goal and target (from dispatcher or user)
+2. Read `swarm-roles.yaml` to get the preset config
+3. Determine worker role and worker count from preset
+4. Check for existing team
+5. Confirm with user (show: worker role, count, target)
+6. Create team: `swarm-swarm-{goal}-{ts}`
+7. Create N tasks (all pending, no owner, no dependencies) — one
+   per work unit. The lead determines work units from the target
+   (e.g., one task per module, per file group, per endpoint).
+8. Spawn M workers with identical prompts. Spawn prompt includes
+   loop instructions: claim -> work -> SendMessage -> claim next
+   -> go idle when pool empty.
+9. Collect findings as workers report via SendMessage.
+10. Synthesize and present unified report when all workers idle.
+11. Await user instructions.
+12. Shutdown and cleanup.
+
+Key differences from fan-out documented in the skill:
+
+- Workers are interchangeable (same role prompt)
+- Workers loop (claim multiple tasks)
+- Task pool can be larger than worker count
+- Lead creates tasks based on target decomposition
+
+#### Step 2: Verify
+
+```bash
+cat skills/swarm-swarm/SKILL.md
+```
+
+#### Step 3: Commit
+
+```bash
+git add skills/swarm-swarm/SKILL.md
+git commit -m "feat(skill): swarm self-claiming pattern
+
+Workers self-assign from shared task pool via TaskList and
+TaskUpdate. Supports task counts larger than worker count with
+automatic re-claiming loop."
+```
+
+---
+
+## Task 6: Write swarm-pipeline skill (pipeline + task-graph)
+
+Unified skill handling both linear pipeline (`stages`) and arbitrary
+DAG (`nodes` with `depends_on`).
+
+**Files:**
+
+- Create: `skills/swarm-pipeline/SKILL.md`
+
+#### Step 1: Write the skill
+
+The skill handles two config shapes:
+
+- `pattern: pipeline` with `stages` array (linear chain)
+- `pattern: task-graph` with `nodes` map (arbitrary DAG)
+
+Checklist:
+
+1. Identify goal and target
+2. Read config — determine topology (pipeline or task-graph)
+3. For pipeline: convert `stages` to a linear dependency chain
+4. For task-graph: read `nodes` with `depends_on` edges
+5. Check for existing team
+6. Confirm with user (show: stages/nodes, dependencies, target)
+7. Create team: `swarm-pipeline-{goal}-{ts}` or
+   `swarm-task-graph-{goal}-{ts}`
+8. Create tasks with `addBlockedBy` edges matching the dependency
+   graph. For pipeline, each stage blocks the next.
+9. For stages with multiple roles: create parallel tasks within
+   the stage, all sharing the same `addBlockedBy` predecessor(s).
+10. Spawn agents for all nodes/stages. Agents for blocked tasks
+    will idle until their dependencies complete.
+11. Context passing: when a stage completes, lead forwards its
+    SendMessage findings to the next stage's agents via SendMessage.
+12. Collect findings as stages complete sequentially.
+13. Synthesize final output from all stage reports.
+14. Await user instructions.
+15. Shutdown and cleanup.
+
+Document context passing mechanisms:
+
+- SendMessage relay (default): lead forwards findings between stages
+- Worktree chain (when roles have `isolation: worktree`): each stage
+  works on the branch from the previous stage
+
+#### Step 2: Verify
+
+```bash
+cat skills/swarm-pipeline/SKILL.md
+```
+
+#### Step 3: Commit
+
+```bash
+git add skills/swarm-pipeline/SKILL.md
+git commit -m "feat(skill): pipeline and task-graph pattern
+
+Unified skill for sequential orchestration. Pipeline uses linear
+stages shorthand; task-graph uses arbitrary DAG with depends_on
+edges. Both use blocks/blockedBy for automatic stage transitions."
+```
+
+---
+
+## Task 7: Write swarm-map-reduce skill
+
+Fan-out with structured input splitting and a dedicated reducer.
+
+**Files:**
+
+- Create: `skills/swarm-map-reduce/SKILL.md`
+
+#### Step 1: Write the skill
+
+Checklist:
+
+1. Identify goal and target
+2. Read config — get `map_role`, `reduce_role`, `split_strategy`
+3. Determine the split based on strategy:
+   - `by-directory`: list top-level directories in target, one
+     mapper per directory
+   - `by-file-count`: count files, split into roughly equal groups
+   - `manual`: ask user to specify the split
+4. Check for existing team
+5. Confirm with user (show: mapper count, chunks, reducer, target)
+6. Create team: `swarm-map-reduce-{goal}-{ts}`
+7. Create N mapper tasks (independent, no dependencies) + 1 reducer
+   task (blocked by all mapper tasks via `addBlockedBy`)
+8. Spawn N mapper agents + 1 reducer agent. Each mapper's spawn
+   prompt includes its specific chunk assignment.
+9. Collect mapper findings via SendMessage as they complete.
+10. When all mappers complete, reducer task auto-unblocks. Lead
+    forwards all mapper outputs to reducer via SendMessage.
+11. Reducer merges and sends unified result to lead.
+12. Present final merged result.
+13. Await user instructions.
+14. Shutdown and cleanup.
+
+Document why the reducer is a teammate (delegate mode prevents the
+lead from file operations).
+
+#### Step 2: Verify
+
+```bash
+cat skills/swarm-map-reduce/SKILL.md
+```
+
+#### Step 3: Commit
+
+```bash
+git add skills/swarm-map-reduce/SKILL.md
+git commit -m "feat(skill): map-reduce pattern
+
+Parallel mappers process input chunks independently. Dedicated
+reducer teammate merges outputs after all mappers complete via
+blockedBy gate."
+```
+
+---
+
+## Task 8: Write swarm-speculative skill
+
+Competing approaches with a judge selecting the winner.
+
+**Files:**
+
+- Create: `skills/swarm-speculative/SKILL.md`
+
+#### Step 1: Write the skill
+
+Checklist:
+
+1. Identify goal and target. The goal should describe competing
+   approaches (e.g., "refactor auth module — try approach A vs B").
+2. Read config — get `approach_role`, `judge_role`,
+   `approach_count`, `plan_approval`.
+3. Define approaches: either user specifies them, or lead generates
+   N distinct approach descriptions.
+4. Check for existing team
+5. Confirm with user (show: approach count, approaches, judge,
+   plan approval status, target)
+6. Create team: `swarm-speculative-{goal}-{ts}`
+7. Create N approach tasks (independent) + 1 judge task (blocked
+   by all approach tasks via `addBlockedBy`).
+8. Spawn N implementer agents, each with `isolation: worktree`.
+   Each gets a unique approach description in its spawn prompt.
+9. If `plan_approval: true`: spawn implementers with
+   `mode: "plan"`. Lead receives plan approval requests, reviews
+   each plan, approves or rejects with feedback via
+   `plan_approval_response`.
+10. Collect approach reports via SendMessage as implementers
+    complete (each reports: what they changed, branch name).
+11. When all approaches complete, judge task auto-unblocks. Lead
+    forwards all approach summaries + branch names to judge.
+12. Judge checks out each branch, evaluates, sends verdict with
+    winning branch name.
+13. Present verdict to user with branch info for merging.
+14. Await user instructions.
+15. Shutdown and cleanup.
+
+#### Step 2: Verify
+
+```bash
+cat skills/swarm-speculative/SKILL.md
+```
+
+#### Step 3: Commit
+
+```bash
+git add skills/swarm-speculative/SKILL.md
+git commit -m "feat(skill): speculative pattern
+
+Competing implementations in isolated worktrees. Judge teammate
+evaluates all approaches and selects winner. Optional plan
+approval gates before implementation."
+```
+
+---
+
+## Task 9: Update hooks for pattern-aware routing
+
+Make `teammate-idle.sh` and `task-completed.sh` pattern-aware by
+extracting the pattern from team name and routing to appropriate
+gate logic.
+
+**Files:**
+
+- Modify: `hooks/scripts/teammate-idle.sh`
+- Modify: `hooks/scripts/task-completed.sh`
+- Create: `hooks/scripts/lib/pattern-detect.sh`
+
+#### Step 1: Create shared pattern detection library
+
+Create `hooks/scripts/lib/pattern-detect.sh`:
+
+```bash
+#!/usr/bin/env bash
+# Shared pattern detection for swarm hooks
+# Sources into calling scripts — sets $PATTERN variable
+#
+# Extracts pattern from team name convention:
+#   swarm-{pattern}-{goal}-{ts}
+# Falls back to "fan-out" for v1 team names without pattern segment.
+
+PATTERN_RE='^swarm-(fan-out|swarm|pipeline|task-graph'
+PATTERN_RE+='|map-reduce|speculative)-'
+if [[ "$TEAM_NAME" =~ $PATTERN_RE ]]; then
+  PATTERN="${BASH_REMATCH[1]}"
+else
+  PATTERN="fan-out"
+fi
+```
+
+#### Step 2: Update teammate-idle.sh
+
+After the `^swarm-` guard and before the SendMessage check, source
+the pattern detection library and add pattern-aware routing:
+
+```bash
+source "$(dirname "$0")/lib/pattern-detect.sh"
+
+case "$PATTERN" in
+  fan-out|swarm|map-reduce)
+    # All agents must report findings via SendMessage
+    ;; # fall through to existing check
+  pipeline|task-graph)
+    # Stage agents: allow idle after SendMessage OR after writing
+    # to worktree (detected by commit in transcript)
+    if grep -q '"SendMessage"\|"git commit"' \
+        "$TRANSCRIPT_PATH" 2>/dev/null; then
+      exit 0
+    fi
+    echo "You haven't sent findings or committed changes yet." >&2
+    exit 2
+    ;;
+  speculative)
+    # Approach agents: must commit; judge: must SendMessage
+    if grep -q '"SendMessage"\|"git commit"' \
+        "$TRANSCRIPT_PATH" 2>/dev/null; then
+      exit 0
+    fi
+    echo "You haven't committed your approach or sent a verdict." >&2
+    exit 2
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+```
+
+#### Step 3: Update task-completed.sh
+
+Same pattern: source the library, add pattern-aware routing with
+the same case structure.
+
+#### Step 4: Verify scripts are executable and syntactically valid
+
+```bash
+bash -n hooks/scripts/teammate-idle.sh
+bash -n hooks/scripts/task-completed.sh
+bash -n hooks/scripts/lib/pattern-detect.sh
+```
+
+Expected: no output (valid syntax).
+
+#### Step 5: Commit
+
+```bash
+git add hooks/scripts/
+git commit -m "feat(hooks): pattern-aware quality gates
+
+Extract pattern from team name convention. Route to appropriate
+gate logic per pattern. Fall back to fan-out for v1 teams."
+```
+
+---
+
+## Task 10: Update plugin metadata and examples
+
+Bump version, update description, add example config files.
+
+**Files:**
+
+- Modify: `.claude-plugin/plugin.json`
+- Create: `config/examples/swarm-module-audit.yaml`
+- Create: `config/examples/pipeline-implement-review.yaml`
+- Create: `config/examples/task-graph-migration.yaml`
+- Create: `config/examples/map-reduce-audit.yaml`
+- Create: `config/examples/speculative-refactor.yaml`
+
+#### Step 1: Update plugin.json
+
+Change version from `0.1.0` to `0.2.0`. Update description:
+
+```json
+{
+  "description": "Multi-pattern orchestration for Claude Code —
+    fan-out, swarm, pipeline, map-reduce, speculative, and watchdog
+    patterns for concurrent review, analysis, implementation, and
+    research"
+}
+```
+
+#### Step 2: Create example config files
+
+Each example is a standalone YAML file showing one preset with
+inline comments explaining the pattern-specific fields. Use the
+preset definitions from the design doc as source.
+
+#### Step 3: Commit
+
+```bash
+git add .claude-plugin/plugin.json config/examples/
+git commit -m "feat: bump to v0.2.0 with v2 pattern examples
+
+Update plugin metadata for multi-pattern support. Add example
+configs for swarm, pipeline, task-graph, map-reduce, speculative."
+```
+
+---
+
+## Task 11: Watchdog modifier support
+
+Add `watchdog: true` handling to the dispatcher and fan-out skill.
+
+**Files:**
+
+- Modify: `skills/swarm/SKILL.md`
+- Modify: `skills/swarm-fan-out/SKILL.md`
+- Modify: `config/swarm-roles.yaml` (add example preset)
+
+#### Step 1: Update dispatcher
+
+Add a note after pattern routing: if the preset has
+`watchdog: true`, spawn an additional monitor agent alongside the
+pattern's normal agents using the `monitor` role from config.
+
+#### Step 2: Update fan-out skill
+
+Add a section after step 6 (spawn specialists): "If `watchdog: true`
+on the preset, spawn one additional agent using the `monitor` role
+with `run_in_background: true`."
+
+#### Step 3: Add example preset
+
+Add to `swarm-roles.yaml`:
+
+```yaml
+monitored-review:
+  description: "PR review with active monitoring"
+  pattern: fan-out
+  watchdog: true
+  roles: [security-reviewer, performance-reviewer, quality-reviewer]
+```
+
+#### Step 4: Validate YAML
+
+```bash
+python3 -c \
+  "import yaml; yaml.safe_load(open('config/swarm-roles.yaml'))"
+```
+
+#### Step 5: Commit
+
+```bash
+git add skills/ config/swarm-roles.yaml
+git commit -m "feat(skill): watchdog modifier support
+
+Dispatcher and fan-out skill spawn additional monitor agent when
+preset has watchdog: true. Add monitored-review example preset."
+```
+
+---
+
+## Task 12: Final review and integration commit
+
+Verify everything works together. Check cross-references between
+skills, config, and hooks.
+
+**Files:**
+
+- Review all modified files
+
+#### Step 1: Verify directory structure matches design
+
+```bash
+find skills/ config/ hooks/ -type f | sort
+```
+
+Compare against design doc plugin file structure.
+
+#### Step 2: Verify all skill frontmatter
+
+Check each SKILL.md has valid frontmatter with `name` and
+`description`.
+
+#### Step 3: Verify config
+
+```bash
+python3 -c \
+  "import yaml; yaml.safe_load(open('config/swarm-roles.yaml'))"
+```
+
+#### Step 4: Verify hook scripts
+
+```bash
+bash -n hooks/scripts/teammate-idle.sh
+bash -n hooks/scripts/task-completed.sh
+bash -n hooks/scripts/lib/pattern-detect.sh
+```
+
+#### Step 5: Run markdownlint on all skills
+
+```bash
+markdownlint-cli2 "skills/**/SKILL.md" 2>&1 || true
+```
+
+Fix any issues found.
+
+#### Step 6: Commit any fixes
+
+```bash
+git add -A
+git commit -m "chore: integration review fixes"
+```
+
+Only commit if there are actual fixes. Skip if clean.
