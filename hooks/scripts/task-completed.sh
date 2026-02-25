@@ -3,6 +3,7 @@
 #
 # Validates that specialist tasks have substantive findings before
 # allowing completion. Only fires for tasks in swarm-* teams.
+# Pattern-aware: routes to appropriate gate logic per pattern.
 #
 # Input (stdin JSON): task_id, task_subject, task_description,
 #                     teammate_name, team_name, transcript_path
@@ -23,13 +24,43 @@ if [[ -z "$TEAM_NAME" || ! "$TEAM_NAME" =~ ^swarm- ]]; then
   exit 0
 fi
 
-# Verify the teammate sent findings via SendMessage before completing
-if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-  if grep -q '"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
-    exit 0
-  fi
-fi
+# Detect pattern from team name
+source "$(dirname "$0")/lib/pattern-detect.sh"
 
-# Task being marked complete without sending findings
-echo "Task '$TASK_SUBJECT' cannot be completed until you send your findings to the team lead via SendMessage. Compile your analysis and send it before marking this task complete." >&2
-exit 2
+case "$PATTERN" in
+  fan-out|swarm|map-reduce)
+    # All agents must send findings via SendMessage before completing
+    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
+      if grep -q '"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+        exit 0
+      fi
+    fi
+    echo "Task '$TASK_SUBJECT' cannot be completed until you send your findings to the team lead via SendMessage." >&2
+    exit 2
+    ;;
+  pipeline|task-graph)
+    # Stage agents: allow completion after SendMessage OR after committing
+    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
+      if grep -q '"SendMessage"\|"git commit"' \
+          "$TRANSCRIPT_PATH" 2>/dev/null; then
+        exit 0
+      fi
+    fi
+    echo "Task '$TASK_SUBJECT' cannot be completed until you send findings or commit changes." >&2
+    exit 2
+    ;;
+  speculative)
+    # Approach agents: must commit; judge: must SendMessage
+    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
+      if grep -q '"SendMessage"\|"git commit"' \
+          "$TRANSCRIPT_PATH" 2>/dev/null; then
+        exit 0
+      fi
+    fi
+    echo "Task '$TASK_SUBJECT' cannot be completed until you commit your approach or send a verdict." >&2
+    exit 2
+    ;;
+  *)
+    exit 0
+    ;;
+esac
