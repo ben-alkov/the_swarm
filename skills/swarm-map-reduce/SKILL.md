@@ -1,8 +1,343 @@
 ---
 name: swarm-map-reduce
-description: "Map-Reduce orchestration — see design doc for details"
+description: >-
+  Map-reduce orchestration. Parallel mappers process input chunks
+  independently, then a dedicated reducer merges all outputs.
 ---
 
 # Map-Reduce Orchestration
 
-*Implementation pending — see design doc.*
+## Overview
+
+> This skill is invoked by the `swarm` dispatcher. You should
+> already have the goal, target, and selected roles from the
+> dispatcher. If invoked directly, start from step 1.
+
+Fan-out with structured input splitting and a dedicated reduce
+phase. Mappers process independent chunks in parallel; a reducer
+teammate merges all mapper outputs into a unified result.
+
+### Why the Reducer Is a Teammate
+
+Delegate mode prevents the lead from reading files, running code,
+or writing output. The reducer needs `general-purpose` access to
+produce structured merged artifacts. It is spawned as a teammate,
+not handled by the lead.
+
+## When to Use
+
+- Large-scale analysis where input can be partitioned
+- Codebase audits across many directories or modules
+- Document processing at scale
+- Any task where results need structured merging
+
+## When NOT to Use
+
+- Tasks don't partition cleanly (use fan-out with specialists)
+- Sequential dependencies between chunks (use pipeline)
+- Competing approaches (use speculative)
+
+## Checklist
+
+You MUST complete these steps in order:
+
+1. **Identify goal and target**
+2. **Read config**
+3. **Determine the split**
+4. **Check for existing team**
+5. **Confirm with user**
+6. **Create team and tasks**
+7. **Spawn mappers and reducer**
+8. **Collect mapper findings**
+9. **Forward to reducer**
+10. **Present final result**
+11. **Await user instructions**
+12. **Shutdown and cleanup**
+
+## Step 1: Identify Goal and Target
+
+Determine from the user's request (or dispatcher context):
+
+- **Goal**: What is being analyzed? (e.g., "audit codebase",
+  "review all modules")
+- **Target**: Which directory, repo, or scope to split?
+
+If unclear, ask the user. Do not guess scope.
+
+## Step 2: Read Config
+
+Read `~/.claude/plugins/swarm/config/swarm-roles.yaml` to get the
+preset config.
+
+From the preset, determine:
+
+- **`map_role`**: the role for mapper agents (default: `mapper`)
+- **`reduce_role`**: the role for the reducer agent (default:
+  `reducer`)
+- **`split_strategy`**: how to partition the target
+
+## Step 3: Determine the Split
+
+Partition the target into chunks based on `split_strategy`:
+
+### `by-directory`
+
+List top-level directories in the target path. One mapper per
+directory.
+
+### `by-file-count`
+
+Count files in the target. Split into roughly equal groups
+(default: ceil(total / 5) files per group, minimum 3 mappers).
+
+### `manual`
+
+Ask the user to specify the split. Present the target structure
+and let them define chunk boundaries.
+
+The number of chunks determines the number of mappers.
+
+## Step 4: Check for Existing Team
+
+Only one team can exist per session. If a team exists: warn the
+user and offer to clean it up first (`TeamDelete`).
+
+## Step 5: Confirm with User
+
+Present the dispatch plan using `AskUserQuestion`:
+
+```text
+I'll dispatch a map-reduce with these parameters:
+- Mappers: {N} (one per chunk)
+- Reducer: 1 ({reduce_role})
+- Split strategy: {strategy}
+- Target: {target}
+
+Chunks:
+1. {chunk description / directory / file group}
+2. {chunk description}
+...
+
+The reducer will merge all mapper outputs after they complete.
+
+Proceed?
+```
+
+Do NOT spawn anything until the user confirms.
+
+## Step 6: Create Team and Tasks
+
+### Team Naming
+
+Use format: `swarm-map-reduce-{goal-slug}-{timestamp}`
+
+Generate the timestamp from the current date/time as a Unix epoch.
+
+### Create Team
+
+```text
+TeamCreate with team_name: "swarm-map-reduce-{goal-slug}-{ts}"
+```
+
+### Create Tasks
+
+**Mapper tasks** — one per chunk via `TaskCreate`:
+
+- `subject`: imperative title including chunk identifier
+  (e.g., "Audit src/auth/ directory")
+- `description`: detailed scope, specific files in this chunk,
+  reporting format expectations
+- `activeForm`: present-continuous spinner label
+- No dependencies — all mapper tasks are independent
+
+**Reducer task** — one via `TaskCreate`:
+
+- `subject`: "Merge mapper outputs into unified report"
+- `description`: merge instructions, expected input count,
+  output format
+- `activeForm`: "Merging mapper outputs"
+- `addBlockedBy`: all mapper task IDs — reducer auto-unblocks
+  when all mappers complete
+
+## Step 7: Spawn Mappers and Reducer
+
+### Spawn Mappers
+
+For each chunk, spawn one mapper agent via `Task` with:
+
+- `team_name`: the team name from step 6
+- `name`: `mapper-{n}` (e.g., `mapper-1`, `mapper-2`)
+- `subagent_type`: from the map role config
+- `model`: from the map role config (if specified)
+- `run_in_background`: `true`
+- `prompt`: composed from the parts below
+
+#### Mapper Prompt Construction
+
+##### Part 1: Identity and Instructions
+
+```markdown
+Your name is {name}. You are part of team {team_name}.
+
+You are mapper {n} of {N} in a map-reduce operation.
+
+Instructions:
+- Claim your task from TaskList, mark it in_progress, then
+  completed when done.
+- Send your findings to the team lead via SendMessage when
+  complete.
+- Include a summary field in your message (5-10 words).
+- Use consistent output format so the reducer can merge easily.
+```
+
+##### Part 2: Role Prompt
+
+The `prompt` field from `swarm-roles.yaml` for the map role.
+
+##### Part 3: Chunk Assignment
+
+```markdown
+## Goal
+
+{goal description from user}
+
+## Your Chunk
+
+{specific chunk assignment — directories, files, or scope}
+
+{any additional context the user provided}
+```
+
+### Spawn Reducer
+
+Spawn one reducer agent via `Task` with:
+
+- `team_name`: the team name from step 6
+- `name`: `reducer`
+- `subagent_type`: from the reduce role config
+  (typically `general-purpose`)
+- `model`: from the reduce role config (if specified)
+- `run_in_background`: `true`
+- `prompt`: composed from the parts below
+
+#### Reducer Prompt Construction
+
+##### Part 1: Reducer Identity and Instructions
+
+```markdown
+Your name is reducer. You are part of team {team_name}.
+
+You are the reducer in a map-reduce operation with {N} mappers.
+
+Instructions:
+- Your task is blocked until all mappers complete. Wait for the
+  lead to forward mapper outputs to you.
+- Once you receive all mapper outputs, merge them into a unified
+  result.
+- Claim your task from TaskList, mark it in_progress, then
+  completed when done.
+- Send your merged result to the team lead via SendMessage.
+- Include a summary field in your message (5-10 words).
+```
+
+##### Part 2: Reducer Role Prompt
+
+The `prompt` field from `swarm-roles.yaml` for the reduce role.
+
+##### Part 3: Reducer Goal Context
+
+```markdown
+## Goal
+
+{goal description from user}
+
+## Expected Input
+
+You will receive {N} mapper outputs via SendMessage from the team
+lead after all mappers complete.
+
+{any additional context about desired output format}
+```
+
+## Step 8: Collect Mapper Findings
+
+Mappers send findings via `SendMessage` as they complete. Messages
+are delivered automatically.
+
+Track which mappers have reported. All mapper tasks must complete
+before proceeding to the reduce phase.
+
+**Error handling:**
+
+- Idle mapper without findings: send a message asking for status
+- No response after nudge: note in report, proceed with available
+  findings
+- All mappers must complete (or be noted as failed) before
+  forwarding to reducer
+
+## Step 9: Forward to Reducer
+
+When all mappers have completed:
+
+1. Collect all mapper findings
+2. Send all mapper outputs to the reducer via `SendMessage` in a
+   single message (or sequentially if too large)
+3. Include mapper identifiers so the reducer knows which chunk
+   each output covers
+
+The reducer task auto-unblocks when all mapper tasks are marked
+complete. The reducer claims its task, merges the outputs, and
+sends the unified result back to the lead.
+
+## Step 10: Present Final Result
+
+Once the reducer sends its merged result:
+
+Present the unified report to the user. Include both the merged
+result and a note about how many mappers contributed.
+
+### Report Structure
+
+```markdown
+## Map-Reduce Analysis Report
+
+**Goal:** {goal}
+**Target:** {target}
+**Mappers:** {N} ({M} reported successfully)
+**Reducer:** {reducer role name}
+
+### Merged Findings
+
+{reducer's unified output}
+
+### Summary
+{brief overall assessment — coverage, key themes, confidence}
+```
+
+## Step 11: Await User Instructions
+
+After presenting the report:
+
+- Do NOT fix issues found
+- Do NOT shut down the team automatically
+- Do NOT proceed past reporting without user input
+
+Wait for the user to decide next steps.
+
+## Step 12: Shutdown and Cleanup
+
+When the user indicates they're done:
+
+1. Send `shutdown_request` to each agent via `SendMessage`
+2. Wait for `shutdown_response` from each
+3. Call `TeamDelete` to clean up
+
+## Design Constraints
+
+- **Reducer is a teammate**: delegate mode prevents lead from
+  doing the merge — the reducer has `general-purpose` access
+- **Mappers are independent**: no dependencies between mapper tasks
+- **Structured output**: mappers must use consistent format for
+  clean merging
+- **One team per session**: check before creating
+- **User controls lifecycle**: never auto-shutdown
