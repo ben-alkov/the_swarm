@@ -227,3 +227,10 @@ presets:
     judge_role: judge
     approach_count: 3
     plan_approval: true
+
+  # v2 Watchdog modifier presets
+  monitored-review:
+    description: "PR review with active monitoring"
+    pattern: fan-out
+    watchdog: true
+    roles: [security-reviewer, performance-reviewer, quality-reviewer]

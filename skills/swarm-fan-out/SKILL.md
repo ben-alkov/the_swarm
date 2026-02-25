@@ -192,6 +192,21 @@ The `prompt` field from `swarm-roles.yaml` for this role.
 All task-specific context MUST be in the spawn prompt — teammates do not
 have access to the lead's conversation history.
 
+### Watchdog Monitor
+
+If the preset has `watchdog: true`, spawn one additional agent using
+the `monitor` role from `swarm-roles.yaml`:
+
+- `name`: `monitor`
+- `subagent_type`: from the monitor role config (typically `Explore`)
+- `run_in_background`: `true`
+- `prompt`: include team name, goal, and instructions to periodically
+  check TaskList for anomalies (stuck tasks, idle workers without
+  findings)
+
+The monitor does not get its own task — it observes and reports to the
+lead via SendMessage. It runs for the duration of the swarm.
+
 ## Step 7: Collect Findings
 
 Teammates send findings via `SendMessage`. Messages are delivered
