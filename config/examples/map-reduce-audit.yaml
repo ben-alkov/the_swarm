@@ -1,0 +1,17 @@
+# Example: Map-reduce codebase audit
+#
+# Usage: "swarm audit the codebase with large-codebase-audit preset"
+#
+# Splits the target into chunks (one per top-level directory by default),
+# spawns a mapper per chunk, and a dedicated reducer merges all outputs.
+# The reducer is blocked until all mappers complete.
+
+preset: large-codebase-audit
+
+# Preset definition (in swarm-roles.yaml):
+# large-codebase-audit:
+#   description: "Audit a large codebase by splitting into chunks"
+#   pattern: map-reduce
+#   map_role: mapper
+#   reduce_role: reducer
+#   split_strategy: by-directory

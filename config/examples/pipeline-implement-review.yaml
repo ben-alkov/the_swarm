@@ -1,0 +1,19 @@
+# Example: Pipeline — implement then review
+#
+# Usage: "swarm implement and review with implement-then-review preset"
+#
+# Two sequential stages: an implementer makes changes in a worktree,
+# then reviewers evaluate the result. The review stage is blocked
+# until implementation completes.
+
+preset: implement-then-review
+
+# Preset definition (in swarm-roles.yaml):
+# implement-then-review:
+#   description: "Sequential: implement, then review the result"
+#   pattern: pipeline
+#   stages:
+#     - name: implement
+#       roles: [implementer]
+#     - name: review
+#       roles: [security-reviewer, quality-reviewer]

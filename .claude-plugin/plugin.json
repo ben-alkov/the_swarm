@@ -1,7 +1,7 @@
 {
   "name": "the_swarm",
-  "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
-  "version": "0.1.0",
+  "description": "Multi-pattern orchestration for Claude Code — fan-out, swarm, pipeline, map-reduce, speculative, and watchdog patterns for concurrent review, analysis, implementation, and research",
+  "version": "0.2.0",
   "author": {
     "name": "Ben Alkov",
     "url": "https://github.com/ben-alkov"

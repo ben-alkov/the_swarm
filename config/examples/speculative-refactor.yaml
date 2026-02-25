@@ -1,0 +1,19 @@
+# Example: Speculative refactoring — best of three
+#
+# Usage: "swarm refactor auth with best-of-three preset"
+#
+# Three implementers each take a different approach in isolated
+# worktrees. A judge evaluates all approaches and selects the winner.
+# Optional plan approval gates ensure approaches stay distinct before
+# implementation begins.
+
+preset: best-of-three
+
+# Preset definition (in swarm-roles.yaml):
+# best-of-three:
+#   description: "Three competing implementations, judge picks winner"
+#   pattern: speculative
+#   approach_role: implementer
+#   judge_role: judge
+#   approach_count: 3
+#   plan_approval: true

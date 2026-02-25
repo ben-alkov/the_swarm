@@ -1,0 +1,16 @@
+# Example: Swarm self-claiming module audit
+#
+# Usage: "swarm audit all modules with swarm-module-audit"
+#
+# Spawns a pool of interchangeable workers that self-assign modules
+# from a shared task pool. Workers loop until all modules are covered.
+# Good for large codebases with many similar-sized modules.
+
+preset: swarm-module-audit
+
+# Inline preset definition (or define in swarm-roles.yaml):
+# swarm-module-audit:
+#   description: "Audit all modules using a worker pool"
+#   pattern: swarm
+#   worker_role: researcher
+#   worker_count: 4

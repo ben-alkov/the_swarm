@@ -1,0 +1,29 @@
+# Example: Task graph — multi-stage migration
+#
+# Usage: "swarm run the multi-stage-migration preset"
+#
+# Arbitrary DAG with fan-out and fan-in. A researcher analyzes first,
+# then two implementers work in parallel on different migration tasks,
+# and finally a reviewer validates after both complete.
+#
+#   analyze ──→ migrate-users ──→ validate
+#          └──→ migrate-orders ──↗
+
+preset: multi-stage-migration
+
+# Preset definition (in swarm-roles.yaml):
+# multi-stage-migration:
+#   description: "Database migration with dependent steps"
+#   pattern: task-graph
+#   nodes:
+#     analyze:
+#       role: researcher
+#     migrate-users:
+#       role: implementer
+#       depends_on: [analyze]
+#     migrate-orders:
+#       role: implementer
+#       depends_on: [analyze]
+#     validate:
+#       role: quality-reviewer
+#       depends_on: [migrate-users, migrate-orders]
