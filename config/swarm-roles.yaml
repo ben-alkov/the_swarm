@@ -97,19 +97,133 @@ roles:
 
       Send your findings to the team lead when complete.
 
+  mapper:
+    description: "Process one chunk of input, produce structured output"
+    subagent_type: Explore
+    prompt: |
+      You are a map-reduce mapper. You will receive a specific chunk of
+      work (a subset of files, modules, or endpoints).
+
+      For your assigned chunk:
+      - Analyze it thoroughly according to the goal
+      - Produce structured findings with consistent format
+      - Include chunk identifier in your output
+
+      Send your structured findings to the team lead when complete.
+
+  reducer:
+    description: "Merge mapper outputs into a unified result"
+    subagent_type: general-purpose
+    prompt: |
+      You are a map-reduce reducer. You will receive findings from
+      multiple mappers.
+
+      Your job:
+      - Merge all mapper outputs into a unified result
+      - Deduplicate overlapping findings
+      - Resolve conflicts between mapper reports
+      - Produce a single coherent output organized by theme/severity
+
+      Send your merged result to the team lead when complete.
+
+  judge:
+    description: "Evaluate competing approaches and select a winner"
+    subagent_type: general-purpose
+    isolation: worktree
+    prompt: |
+      You are a speculative judge. Multiple implementers have taken
+      competing approaches to the same problem, each in their own branch.
+
+      Your job:
+      - Check out each approach branch
+      - Run tests and verify correctness
+      - Evaluate code quality, maintainability, and completeness
+      - Select the best approach with clear justification
+      - Report the winning branch name
+
+      Send your verdict to the team lead when complete.
+
+  monitor:
+    description: "Watch team progress and alert on anomalies"
+    subagent_type: Explore
+    prompt: |
+      You are a watchdog monitor. Observe team progress by checking
+      TaskList periodically.
+
+      Watch for:
+      - Tasks stuck in_progress without progress
+      - Unbalanced workloads (one worker has many tasks, others idle)
+      - Failed or blocked tasks that need intervention
+
+      Send alerts to the team lead when anomalies detected.
+      Do not intervene directly — report to the lead for decisions.
+
 presets:
+  # v1 presets — backward-compatible
   pr-review:
     description: "Standard PR review with three specialists"
+    pattern: fan-out
     roles: [security-reviewer, performance-reviewer, quality-reviewer]
 
   full-review:
     description: "Comprehensive review including architecture"
-    roles: [security-reviewer, performance-reviewer, quality-reviewer, architecture-reviewer]
+    pattern: fan-out
+    roles:
+      - security-reviewer
+      - performance-reviewer
+      - quality-reviewer
+      - architecture-reviewer
 
   security-audit:
     description: "Deep security review only"
+    pattern: fan-out
     roles: [security-reviewer]
 
   implement-and-review:
     description: "Implementation with concurrent review"
+    pattern: fan-out
     roles: [implementer, quality-reviewer]
+
+  # v2 Pipeline presets
+  implement-then-review:
+    description: "Sequential: implement, then review the result"
+    pattern: pipeline
+    stages:
+      - name: implement
+        roles: [implementer]
+      - name: review
+        roles: [security-reviewer, quality-reviewer]
+
+  # v2 Task Graph presets
+  multi-stage-migration:
+    description: "Database migration with dependent steps"
+    pattern: task-graph
+    nodes:
+      analyze:
+        role: researcher
+      migrate-users:
+        role: implementer
+        depends_on: [analyze]
+      migrate-orders:
+        role: implementer
+        depends_on: [analyze]
+      validate:
+        role: quality-reviewer
+        depends_on: [migrate-users, migrate-orders]
+
+  # v2 Map-Reduce presets
+  large-codebase-audit:
+    description: "Audit a large codebase by splitting into chunks"
+    pattern: map-reduce
+    map_role: mapper
+    reduce_role: reducer
+    split_strategy: by-directory
+
+  # v2 Speculative presets
+  best-of-three:
+    description: "Three competing implementations, judge picks winner"
+    pattern: speculative
+    approach_role: implementer
+    judge_role: judge
+    approach_count: 3
+    plan_approval: true
