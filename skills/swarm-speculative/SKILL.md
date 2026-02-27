@@ -104,8 +104,21 @@ implementer can work independently without further guidance.
 
 ## Step 4: Check for Existing Team
 
-Only one team can exist per session. If a team exists: warn the
-user and offer to clean it up first (`TeamDelete`).
+Only one team can exist per session. Before creating a new team,
+check if one already exists.
+
+If a team exists:
+
+- **Active swarm**: warn the user that a swarm is already running
+  and offer to shut it down first (`TeamDelete`).
+- **Orphaned team** (from a crashed session or `/resume`): agents
+  from the previous session are gone but the team and task list
+  persist. Offer the user two options:
+  1. **Delete and restart**: `TeamDelete` the orphaned team, then
+     proceed with a fresh swarm.
+  2. **Salvage completed work**: check `TaskList` for completed
+     tasks, synthesize any available findings from completed tasks,
+     then `TeamDelete` and optionally re-run incomplete tasks.
 
 ## Step 5: Confirm with User
 
