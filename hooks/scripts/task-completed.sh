@@ -32,43 +32,49 @@ fi
 # Detect pattern from team name
 source "$(dirname "$0")/lib/pattern-detect.sh"
 
+# Fail open if transcript is unavailable — cannot verify, should not block
+if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
+  exit 0
+fi
+
+# Monitor agents are exempt from quality gates — they observe, not produce
+if [[ "$TEAMMATE_NAME" == "monitor" ]]; then
+  exit 0
+fi
+
 case "$PATTERN" in
   fan-out|swarm|map-reduce)
     # All agents must send findings via SendMessage before completing
-    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      # Transcript uses compact JSON ("name":"SendMessage") — match both forms
-      if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
-        exit 0
-      fi
+    if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+      exit 0
     fi
     echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you send your findings to the team lead via SendMessage." >&2
     exit 2
     ;;
   pipeline|task-graph)
     # Stage agents: allow completion after SendMessage OR after committing
-    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      # Transcript uses compact JSON — match both forms
-      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
-          "$TRANSCRIPT_PATH" 2>/dev/null; then
-        exit 0
-      fi
+    if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
+        "$TRANSCRIPT_PATH" 2>/dev/null; then
+      exit 0
     fi
     echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you send findings or commit changes." >&2
     exit 2
     ;;
   speculative)
-    # Approach agents: must commit; judge: must SendMessage
-    if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      # Transcript uses compact JSON — match both forms
-      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
-          "$TRANSCRIPT_PATH" 2>/dev/null; then
+    # Approach agents must commit; judge must SendMessage
+    if [[ "$TEAMMATE_NAME" == judge ]]; then
+      if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
+      echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you send your verdict." >&2
+      exit 2
+    else
+      if grep -q '"git commit"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+        exit 0
+      fi
+      echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you commit your approach." >&2
+      exit 2
     fi
-    # NOTE: Cannot distinguish approach agents (should commit) from judge
-    # (should SendMessage) by team name alone — accepted design limitation
-    echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you commit your approach or send a verdict." >&2
-    exit 2
     ;;
   *)
     exit 0
