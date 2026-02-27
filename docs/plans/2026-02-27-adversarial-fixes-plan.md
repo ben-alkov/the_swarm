@@ -10,6 +10,25 @@ additions. No runtime code.
 
 **Tech Stack:** Markdown, YAML, Bash
 
+## Completion Status
+
+- [x] Task 1: Fix hook transcript grep — fail-open + regex fix
+- [x] Task 2: Fix speculative hooks — approach vs judge
+- [x] Task 3: Add monitor agent exclusion to hooks
+- [x] Task 4: Fix config path — use `$CLAUDE_PLUGIN_ROOT`
+- [x] Task 5: Move watchdog spawning to dispatcher
+- [x] Task 6: Add input validation to all pattern skills
+- [x] Task 7: Add isolation handling to swarm and map-reduce
+- [x] Task 8: Fix pipeline race — agents wait for lead start
+- [x] Task 9: Fix map-reduce race — reducer waits for lead
+- [x] Task 10: Fix speculative race — judge waits for lead
+- [x] Task 11: Add swarm worker claim verification
+- [x] Task 12: Add goal slug generation rules
+- [x] Task 13: Add shutdown timeout guidance
+- [x] Task 14: Add session recovery guidance
+- [x] Task 15: Resolve plan approval parameter uncertainty
+- [x] Task 16: Fix pipeline context relay
+
 ---
 
 ### Task 1: Fix hook transcript grep — fail-open on missing transcript + regex fix

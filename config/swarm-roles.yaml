@@ -1,3 +1,10 @@
+# Model pinning rationale:
+# Reviewer and researcher roles pin model: sonnet for cost efficiency.
+# These roles are read-only analysis — sonnet provides sufficient quality
+# at lower cost/latency. Override per-role or per-preset if needed.
+# Implementer/judge/reducer roles inherit the parent model (typically
+# opus) since they produce code or make consequential decisions.
+
 roles:
   security-reviewer:
     description: "Review code for security vulnerabilities"
@@ -250,12 +257,13 @@ presets:
     approach_count: 3
     plan_approval: true
 
-  # v2 Watchdog modifier presets
+  # v2 Swarm (self-claiming pool) presets
   swarm-module-audit:
-    description: "Audit all modules using a worker pool"
+    description: "Audit all modules using a self-claiming worker pool"
     pattern: swarm
     worker_role: researcher
     worker_count: 4
+    # See config/examples/swarm-module-audit.yaml for usage
 
   monitored-review:
     description: "PR review with active monitoring"

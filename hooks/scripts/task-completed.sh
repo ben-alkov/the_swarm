@@ -12,8 +12,9 @@
 
 set -euo pipefail
 
-# Fail open if jq is not installed — silent bypass is worse than no gate
+# Fail open if jq is not installed — warn so users know gates are inactive
 if ! command -v jq >/dev/null 2>&1; then
+  echo "swarm: jq not found — quality gates disabled (install jq to enable)" >&2
   exit 0
 fi
 
