@@ -161,6 +161,17 @@ Spawn N worker agents via `Task` with:
 - `run_in_background`: `true`
 - `prompt`: composed from the parts below
 
+### Isolation Handling
+
+Before spawning, check the worker role's `isolation` field:
+
+- If `isolation: worktree` is set:
+  - Override `subagent_type` to `general-purpose`
+  - Print a note: `Role {name}: using general-purpose (worktree
+    isolation requires write access)`
+  - Pass `isolation: "worktree"` to the `Task` tool call
+- If `isolation` is absent: use the role's `subagent_type` as-is
+
 ### Prompt Construction
 
 #### Part 1: Identity and Loop Instructions
