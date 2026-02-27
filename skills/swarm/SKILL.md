@@ -46,8 +46,29 @@ skill.
    Pass through: goal, target, selected roles/preset, and any
    user context.
 
-6. **Watchdog modifier** — if the preset has `watchdog: true`,
-   pass `watchdog: true` through to the pattern skill. The
-   pattern skill is responsible for spawning the monitor agent
-   after team creation (see each pattern skill's spawn step).
-   The dispatcher does NOT spawn the monitor itself.
+6. **Watchdog modifier** — if the preset has `watchdog: true`, the lead
+   must spawn a monitor agent immediately after creating the team (the
+   pattern skill's "Create Team" step). Spawn it BEFORE spawning any
+   specialist/worker agents.
+
+   Use the `monitor` role from
+   `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml`:
+
+   - `name`: `monitor`
+   - `subagent_type`: from the monitor role config (typically `Explore`)
+   - `run_in_background`: `true`
+   - `prompt`:
+     - Identity: "Your name is monitor. You are part of team {team_name}."
+     - Immediately send a "Monitoring started" message to the team lead
+       via SendMessage (this satisfies the idle hook gate)
+     - Periodically check TaskList for anomalies (stuck tasks, idle
+       workers without findings)
+     - Send alerts to the team lead via SendMessage when anomalies are
+       detected
+     - Do not intervene directly — report to the lead
+
+   The monitor does not get its own task — it observes and reports.
+   Include the monitor in shutdown (send `shutdown_request` to it).
+
+   Pattern skills do NOT spawn the monitor. This section is the single
+   source of truth for monitor spawning.
