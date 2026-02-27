@@ -346,8 +346,13 @@ When the user indicates they're done:
 
 1. Send `shutdown_request` to each agent via `SendMessage`
    (include the monitor agent if `watchdog: true` was active)
-2. Wait for `shutdown_response` from each
-3. Call `TeamDelete` to clean up
+2. Wait for `shutdown_response` from each. If an agent does not
+   respond after a reasonable wait, send one nudge message. If
+   still unresponsive, proceed — the agent may have crashed or
+   terminated.
+3. Call `TeamDelete` to clean up. `TeamDelete` is the authoritative
+   cleanup mechanism — it will fail if active agents remain. If
+   it fails, retry after unresponsive agents have timed out.
 
 ## Design Constraints
 
