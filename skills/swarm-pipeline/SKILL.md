@@ -75,6 +75,24 @@ Determine the topology:
 - If preset has `stages` array → **pipeline** (linear chain)
 - If preset has `nodes` map → **task-graph** (arbitrary DAG)
 
+### Validation
+
+Before proceeding, validate the config:
+
+- **Non-empty topology**: pipeline must have at least 1 stage; task
+  graph must have at least 1 node. If empty, report the error and
+  abort.
+- **Single-stage warning**: if a pipeline has exactly 1 stage, warn
+  the user that this degenerates to fan-out and offer the simpler
+  pattern.
+- **Roles exist**: every role referenced in `stages[].roles` or
+  `nodes[].role` must exist in the `roles:` section. If missing,
+  report the error and abort.
+- **No cycles** (task-graph): validate that `depends_on` references
+  do not create cycles. If cycles found, report the error and abort.
+- **Valid depends_on** (task-graph): all `depends_on` entries must
+  reference existing node names.
+
 ## Step 3: Build Dependency Graph
 
 ### For Pipeline (`stages`)

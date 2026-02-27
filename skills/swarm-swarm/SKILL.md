@@ -74,6 +74,15 @@ From the preset, determine:
 - **Worker count**: how many concurrent workers to spawn (from
   preset `worker_count` or default to 3)
 
+### Validation
+
+Before proceeding, validate the config:
+
+- **Role exists**: `worker_role` must exist in the `roles:` section.
+  If missing, report the error and abort.
+- **Scale warning**: if `worker_count` > 7, warn the user that large
+  swarms may hit context limits and recommend 3-5 workers.
+
 ## Step 3: Decompose Target into Work Units
 
 Analyze the target to determine discrete work units. Each work unit

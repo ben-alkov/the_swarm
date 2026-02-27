@@ -77,6 +77,18 @@ Read the config file to get available roles and presets.
 If the user requests roles not in the config, tell them what's available
 and ask for clarification. Do not invent roles on the fly.
 
+### Validation
+
+Before proceeding, validate the config:
+
+- **Roles exist**: every role name in the preset's `roles` list must
+  exist in the `roles:` section of the config. If any are missing,
+  report the error to the user and abort.
+- **Non-empty roles**: the `roles` list must contain at least 1 entry.
+  If empty or missing, report the error and abort.
+- **No duplicates**: warn the user if the same role appears more than
+  once in the list.
+
 ## Step 3: Check for Existing Team
 
 Only one team can exist per session. Before creating a new team, check

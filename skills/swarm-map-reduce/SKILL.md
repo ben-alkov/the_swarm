@@ -76,6 +76,13 @@ From the preset, determine:
   `reducer`)
 - **`split_strategy`**: how to partition the target
 
+### Validation
+
+Before proceeding, validate the config:
+
+- **Roles exist**: `map_role` and `reduce_role` must exist in the
+  `roles:` section. If missing, report the error and abort.
+
 ## Step 3: Determine the Split
 
 Partition the target into chunks based on `split_strategy`:
@@ -96,6 +103,18 @@ Ask the user to specify the split. Present the target structure
 and let them define chunk boundaries.
 
 The number of chunks determines the number of mappers.
+
+### Split Validation
+
+- **Minimum chunks**: the split must produce at least 1 chunk. If the
+  target is empty or the split yields 0 chunks, report the error and
+  abort.
+- **Single chunk bypass**: if the split yields exactly 1 chunk, warn
+  the user that map-reduce overhead is unnecessary and offer to run
+  as a simple fan-out instead.
+- **Maximum mappers**: if the split yields more than 7 chunks, warn
+  the user that large swarms may hit context limits. Offer to batch
+  directories into groups to reduce mapper count.
 
 ## Step 4: Check for Existing Team
 

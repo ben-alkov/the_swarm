@@ -80,6 +80,15 @@ From the preset, determine:
 - **`plan_approval`**: whether implementers must submit plans
   before implementing (default: false)
 
+### Validation
+
+Before proceeding, validate the config:
+
+- **Minimum approaches**: `approach_count` must be >= 2. A single
+  approach has no comparison value — report the error and abort.
+- **Roles exist**: `approach_role` and `judge_role` must exist in the
+  `roles:` section. If missing, report the error and abort.
+
 ## Step 3: Define Approaches
 
 Either:
