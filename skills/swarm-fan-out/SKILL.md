@@ -88,6 +88,9 @@ Before proceeding, validate the config:
   If empty or missing, report the error and abort.
 - **No duplicates**: warn the user if the same role appears more than
   once in the list.
+- **Single-role warning**: if the `roles` list contains exactly 1 role,
+  warn the user that fan-out orchestration adds overhead with no
+  parallelism benefit. Offer to run a single agent directly instead.
 
 ## Step 3: Check for Existing Team
 

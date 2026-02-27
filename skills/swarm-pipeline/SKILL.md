@@ -83,8 +83,9 @@ Before proceeding, validate the config:
   graph must have at least 1 node. If empty, report the error and
   abort.
 - **Single-stage warning**: if a pipeline has exactly 1 stage, warn
-  the user that this degenerates to fan-out and offer the simpler
-  pattern.
+  the user that this degenerates to fan-out but uses pipeline hook
+  semantics (requiring commit or SendMessage instead of just
+  SendMessage). Offer to switch to fan-out for simpler gating.
 - **Roles exist**: every role referenced in `stages[].roles` or
   `nodes[].role` must exist in the `roles:` section. If missing,
   report the error and abort.

@@ -110,8 +110,12 @@ The number of chunks determines the number of mappers.
   target is empty or the split yields 0 chunks, report the error and
   abort.
 - **Single chunk bypass**: if the split yields exactly 1 chunk, warn
-  the user that map-reduce overhead is unnecessary and offer to run
-  as a simple fan-out instead.
+  the user that map-reduce overhead is unnecessary and offer two
+  options:
+  1. Switch to fan-out (recommended — no reducer needed)
+  2. Proceed without a reducer — spawn one mapper, skip the reducer
+     entirely, and present the mapper's output directly as the final
+     result (skip steps 7b, 9)
 - **Maximum mappers**: if the split yields more than 7 chunks, warn
   the user that large swarms may hit context limits. Offer to batch
   directories into groups to reduce mapper count.
