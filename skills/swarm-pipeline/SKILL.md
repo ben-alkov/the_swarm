@@ -192,6 +192,20 @@ Set dependencies via `TaskUpdate`:
 
 First stage / root nodes have no blockers — they start immediately.
 
+**Relay tasks** — one per stage transition via `TaskCreate`:
+
+- `subject`: "Relay stage {N} findings to stage {N+1}"
+- `description`: "Collect findings from stage {N} agents, forward
+  to stage {N+1} agents via SendMessage, wait for acknowledgment"
+- `activeForm`: "Relaying stage {N} findings"
+- `addBlockedBy`: all task IDs from stage N — relay auto-unblocks
+  when the source stage completes
+- Relay tasks for stage N+1 should be added to the `addBlockedBy`
+  list of stage N+1's agent tasks (in addition to stage N's tasks)
+
+This makes relay a visible, trackable step in the task list. The
+lead claims and completes relay tasks as part of step 8.
+
 ## Step 7: Spawn Agents
 
 For each role in each stage/node, spawn one agent via `Task` with:
