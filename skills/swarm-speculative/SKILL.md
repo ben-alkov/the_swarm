@@ -334,6 +334,9 @@ When all approaches have completed:
 2. Send all approach summaries + branch names to the judge via
    `SendMessage`
 3. Include approach identifiers so the judge knows which is which
+4. End the message with: "You may now claim your task and begin
+   evaluating."
+5. Wait for the judge to acknowledge receipt before proceeding
 
 The judge task auto-unblocks when all approach tasks are marked
 complete. The judge checks out each branch, evaluates, and sends
