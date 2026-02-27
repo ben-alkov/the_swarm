@@ -19,7 +19,7 @@ skill.
    ask.
 
 2. **Read roles config** from
-   `~/.claude/plugins/swarm/config/swarm-roles.yaml`.
+   `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml`.
 
 3. **Select preset or roles** using the same priority as v1:
    - User specifies a preset name -> use it

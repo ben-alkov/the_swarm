@@ -67,7 +67,7 @@ If unclear, ask the user. Do not guess scope.
 
 ## Step 2: Read Config
 
-Read `~/.claude/plugins/swarm/config/swarm-roles.yaml` to get the
+Read `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml` to get the
 preset config.
 
 From the preset, determine:

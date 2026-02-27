@@ -63,7 +63,7 @@ If unclear, ask the user. Do not guess scope.
 
 ## Step 2: Select Roles
 
-Roles come from `~/.claude/plugins/swarm/config/swarm-roles.yaml`.
+Roles come from `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml`.
 
 Read the config file to get available roles and presets.
 
