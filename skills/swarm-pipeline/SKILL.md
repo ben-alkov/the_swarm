@@ -219,9 +219,13 @@ Instructions:
   complete.
 - Include a summary field in your message (5-10 words).
 
-Your task may be blocked by earlier stages. If your task is
-blocked, wait — it will unblock automatically when dependencies
-complete.
+Your task may be blocked by earlier stages. When it unblocks, do
+NOT claim it immediately. Wait for the team lead to send you a
+"start" message via SendMessage containing upstream findings.
+Only claim your task and begin work AFTER receiving the lead's
+start message.
+
+First-stage agents (no blockers): claim your task immediately.
 ```
 
 #### Part 2: Role Prompt
@@ -255,9 +259,21 @@ When a stage completes (all its tasks are done and agents have
 sent findings):
 
 1. Collect all findings from that stage's agents
-2. Forward the findings to the next stage's agents via
-   `SendMessage`
-3. Include the stage name and a summary of what was done
+2. Create a relay task via `TaskCreate`:
+   - `subject`: "Relay stage {N} findings to stage {N+1}"
+   - `description`: summary of what to forward
+   - `activeForm`: "Relaying stage findings"
+   - `addBlockedBy`: all task IDs from the completed stage
+3. Forward the findings to the next stage's agents via
+   `SendMessage` — include the stage name and a summary of what
+   was done. End the message with: "You may now claim your task
+   and begin work."
+4. Wait for each downstream agent to acknowledge receipt via
+   `SendMessage` before marking the relay task completed
+5. Mark the relay task as completed
+
+Do NOT proceed to the next relay until downstream agents have
+acknowledged. If an agent does not acknowledge, nudge it.
 
 ### Context Passing Mechanisms
 
