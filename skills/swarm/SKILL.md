@@ -35,6 +35,28 @@ Examples:
 Pass the goal slug through to the pattern skill along with the
 goal, target, and preset.
 
+## Stale Worktree Cleanup
+
+Before starting any swarm, check for leftover worktrees from
+previous sessions:
+
+```bash
+git worktree list
+```
+
+If worktrees exist that are not associated with the current session
+(stale branches from crashed or abandoned swarms), offer the user
+two options:
+
+1. **Remove stale worktrees**: `git worktree remove <path>` for
+   each stale entry. This reclaims disk space but the branches
+   persist and can still be merged.
+2. **Keep them**: the user may want to inspect or recover work.
+
+Only worktrees whose branch names match the `swarm-*` naming
+convention should be flagged. Non-swarm worktrees are outside
+this plugin's scope.
+
 ## Steps
 
 1. **Identify goal and target** from the user's request. If unclear,
@@ -43,14 +65,19 @@ goal, target, and preset.
 2. **Read roles config** from
    `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml`.
 
-3. **Select preset or roles** using the same priority as v1:
+3. **Select preset or roles** using the same priority as v1.
+   When resolving roles, check for inline definitions in the preset
+   first (entries with a `name` and `prompt` field), then fall back
+   to global role names in the `roles:` section.
    - User specifies a preset name -> use it
    - User specifies individual role names -> use those (fan-out)
    - User describes what they want -> match to preset/roles
    - Default for "review" -> `pr-review` preset
 
 4. **Determine pattern** from the selected preset's `pattern` field.
-   If absent, default to `fan-out`.
+   If absent, default to `fan-out`. If the preset has
+   `deprecated: true`, warn the user and suggest the `successor`
+   preset instead. Proceed only if the user confirms.
 
 5. **Route to pattern skill** — read and follow the corresponding
    skill:

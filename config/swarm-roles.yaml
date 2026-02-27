@@ -159,6 +159,25 @@ roles:
       Send alerts to the team lead when anomalies detected.
       Do not intervene directly — report to the lead for decisions.
 
+# Inline role overrides
+#
+# Presets can define roles inline instead of referencing global names.
+# Use this for single-use roles that don't belong in the global namespace.
+#
+# Example:
+#   my-preset:
+#     pattern: fan-out
+#     roles:
+#       - role: security-reviewer          # reference global role
+#       - name: one-off-checker            # inline role definition
+#         subagent_type: Explore
+#         prompt: |
+#           Custom prompt for this preset only.
+#
+# Inline roles are scoped to the preset and do not appear in the
+# global roles section. Pattern skills resolve role definitions by
+# checking inline first, then falling back to global roles.
+
 presets:
   # v1 presets — backward-compatible
   pr-review:
@@ -181,7 +200,9 @@ presets:
     roles: [security-reviewer]
 
   implement-and-review:
-    description: "Implementation with concurrent review (reviewer sees pre-change code; prefer implement-then-review for sequential correctness)"
+    description: "DEPRECATED — reviewer runs concurrently and sees pre-change code. Use implement-then-review instead."
+    deprecated: true
+    successor: implement-then-review
     pattern: fan-out
     roles: [implementer, quality-reviewer]
 
