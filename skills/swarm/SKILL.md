@@ -13,6 +13,28 @@ Route swarm requests to the appropriate pattern skill. Read the
 preset config, determine the pattern, and follow the corresponding
 skill.
 
+### Goal Slug Generation
+
+When pattern skills create team names, they use the format
+`swarm-{pattern}-{goal-slug}-{timestamp}`. Generate the goal slug
+from the user's goal description:
+
+- Lowercase only
+- Replace spaces and special characters with hyphens
+- Remove all characters except `a-z`, `0-9`, and `-`
+- Collapse consecutive hyphens into one
+- Truncate to 30 characters maximum
+- Strip leading and trailing hyphens
+
+Examples:
+
+- "PR review" → `pr-review`
+- "Security audit of auth module" → `security-audit-of-auth-module`
+- "Fix the OAuth2/OIDC integration!!!" → `fix-the-oauth2-oidc-integrat`
+
+Pass the goal slug through to the pattern skill along with the
+goal, target, and preset.
+
 ## Steps
 
 1. **Identify goal and target** from the user's request. If unclear,
