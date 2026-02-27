@@ -268,6 +268,7 @@ Instructions:
   completed when done.
 - Send your merged result to the team lead via SendMessage.
 - Include a summary field in your message (5-10 words).
+- Mark the task as completed.
 ```
 
 ##### Part 2: Reducer Role Prompt
@@ -302,6 +303,9 @@ before proceeding to the reduce phase.
 - Idle mapper without findings: send a message asking for status
 - No response after nudge: note in report, proceed with available
   findings
+- Unresponsive mapper blocking reducer: manually mark the failed
+  mapper's task as completed (or deleted) to unblock the reducer.
+  Note the missing chunk in the forwarded data.
 - All mappers must complete (or be noted as failed) before
   forwarding to reducer
 
@@ -314,6 +318,9 @@ When all mappers have completed:
    single message (or sequentially if too large)
 3. Include mapper identifiers so the reducer knows which chunk
    each output covers
+4. End the message with: "You may now claim your task and begin
+   reducing."
+5. Wait for the reducer to acknowledge receipt before proceeding
 
 The reducer task auto-unblocks when all mapper tasks are marked
 complete. The reducer claims its task, merges the outputs, and
