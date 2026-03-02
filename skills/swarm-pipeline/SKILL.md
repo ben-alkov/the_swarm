@@ -77,18 +77,20 @@ Determine the topology:
 
 ### Validation
 
-Before proceeding, validate the config:
+The dispatcher has already validated config shape (role existence,
+required fields, `subagent_type` values). The checks below cover
+pipeline/task-graph-specific semantics.
 
 - **Non-empty topology**: pipeline must have at least 1 stage; task
   graph must have at least 1 node. If empty, report the error and
   abort.
+- **Non-empty stage roles**: each `stages[].roles` list must contain
+  at least 1 entry. A stage with no roles would block the relay
+  indefinitely. If empty, report the error and abort.
 - **Single-stage warning**: if a pipeline has exactly 1 stage, warn
   the user that this degenerates to fan-out but uses pipeline hook
   semantics (requiring commit or SendMessage instead of just
   SendMessage). Offer to switch to fan-out for simpler gating.
-- **Roles exist**: every role referenced in `stages[].roles` or
-  `nodes[].role` must exist in the `roles:` section. If missing,
-  report the error and abort.
 - **No cycles** (task-graph): validate that `depends_on` references
   do not create cycles. If cycles found, report the error and abort.
 - **Valid depends_on** (task-graph): all `depends_on` entries must
@@ -117,8 +119,8 @@ analyze → migrate-users ──→ validate
        → migrate-orders ──↗
 ```
 
-Validate the graph: no cycles, all `depends_on` references point
-to existing nodes.
+All graph validation (cycles, dangling references) was completed in
+step 2. This step is construction only — do not re-validate here.
 
 ## Step 4: Check for Existing Team
 

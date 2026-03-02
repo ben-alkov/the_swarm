@@ -82,12 +82,12 @@ From the preset, determine:
 
 ### Validation
 
-Before proceeding, validate the config:
+The dispatcher has already validated config shape (role existence,
+required fields, `subagent_type` values, numeric ranges). The checks
+below cover speculative-specific semantics.
 
 - **Minimum approaches**: `approach_count` must be >= 2. A single
   approach has no comparison value — report the error and abort.
-- **Roles exist**: `approach_role` and `judge_role` must exist in the
-  `roles:` section. If missing, report the error and abort.
 
 ## Step 3: Define Approaches
 

@@ -45,7 +45,8 @@ fi
 
 case "$PATTERN" in
   fan-out|swarm|map-reduce)
-    # All agents must send findings via SendMessage before completing
+    # Heuristic: matches tool calls in transcript JSON. May false-positive
+    # on text that mentions SendMessage without actually calling it.
     if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
       exit 0
     fi

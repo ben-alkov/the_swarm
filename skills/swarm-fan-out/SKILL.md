@@ -79,11 +79,10 @@ and ask for clarification. Do not invent roles on the fly.
 
 ### Validation
 
-Before proceeding, validate the config:
+The dispatcher has already validated config shape (role existence,
+required fields, `subagent_type` values). The checks below cover
+fan-out-specific semantics.
 
-- **Roles exist**: every role name in the preset's `roles` list must
-  exist in the `roles:` section of the config. If any are missing,
-  report the error to the user and abort.
 - **Non-empty roles**: the `roles` list must contain at least 1 entry.
   If empty or missing, report the error and abort.
 - **No duplicates**: warn the user if the same role appears more than

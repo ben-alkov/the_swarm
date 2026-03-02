@@ -76,10 +76,10 @@ From the preset, determine:
 
 ### Validation
 
-Before proceeding, validate the config:
+The dispatcher has already validated config shape (role existence,
+required fields, `subagent_type` values, numeric ranges). The checks
+below cover swarm-specific semantics.
 
-- **Role exists**: `worker_role` must exist in the `roles:` section.
-  If missing, report the error and abort.
 - **Scale warning**: if `worker_count` > 7, warn the user that large
   swarms may hit context limits and recommend 3-5 workers.
 

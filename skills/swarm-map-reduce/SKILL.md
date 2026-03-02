@@ -78,10 +78,18 @@ From the preset, determine:
 
 ### Validation
 
-Before proceeding, validate the config:
+The dispatcher has already validated config shape (role existence,
+required fields, `subagent_type` values). The checks below cover
+map-reduce-specific semantics.
 
-- **Roles exist**: `map_role` and `reduce_role` must exist in the
-  `roles:` section. If missing, report the error and abort.
+- **Reducer capability**: the `reduce_role` must have
+  `subagent_type: general-purpose`. A reducer with `Explore` cannot
+  write merged output. If the reducer role uses `Explore`, **warn**
+  and recommend changing it — or note that `isolation: worktree`
+  will override it to `general-purpose` at spawn time.
+- **Split strategy required**: `split_strategy` must be present and
+  one of `by-directory`, `by-file-count`, or `manual`. If absent or
+  unrecognized, report the error and abort.
 
 ## Step 3: Determine the Split
 

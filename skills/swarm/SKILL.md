@@ -25,6 +25,9 @@ from the user's goal description:
 - Collapse consecutive hyphens into one
 - Truncate to 30 characters maximum
 - Strip leading and trailing hyphens
+- **Abort if empty**: if the slug is empty after all transformations
+  (e.g., goal was all special characters), abort with: "Could not
+  generate a valid team name from the provided goal."
 
 Examples:
 
@@ -74,12 +77,78 @@ this plugin's scope.
    - User describes what they want -> match to preset/roles
    - Default for "review" -> `pr-review` preset
 
-4. **Determine pattern** from the selected preset's `pattern` field.
+4. **Validate config** — check the resolved preset and roles for
+   structural problems before routing to a pattern skill. Abort or
+   warn as indicated:
+
+   #### Required role fields
+
+   Every role referenced by the preset (whether global or inline)
+   must have:
+
+   - `prompt` — non-empty. An inline role missing `prompt` means the
+     agent would be spawned with no instructions. **Abort.**
+   - `subagent_type` — must be one of `Explore` or `general-purpose`.
+     Missing or unrecognized values (typos like `Explorer`) cause
+     opaque spawn failures. **Abort.**
+
+   #### Isolation consistency
+
+   If a role specifies `isolation: worktree` but its `subagent_type`
+   is not `general-purpose`, **warn** that `subagent_type` will be
+   overridden to `general-purpose` at spawn time (worktree isolation
+   requires write access). This is not an error — pattern skills
+   handle the override — but the role definition is internally
+   inconsistent and should be fixed.
+
+   #### Numeric fields
+
+   `worker_count` (swarm) and `approach_count` (speculative) must be
+   positive integers when present. Non-numeric values, zero, or
+   negative values are invalid. **Abort.**
+
+   #### Topology-pattern agreement
+
+   The preset's declared `pattern` must match the topology keys
+   present in the preset config:
+
+   | Pattern | Expected keys | Unexpected keys |
+   |---|---|---|
+   | `fan-out` | `roles` | `stages`, `nodes` |
+   | `pipeline` | `stages` or `nodes` | bare `roles` |
+   | `task-graph` | `nodes` | `stages` without `depends_on` |
+   | `map-reduce` | `map_role`, `reduce_role` | `roles`, `stages` |
+   | `speculative` | `approach_role`, `judge_role` | `roles`, `stages` |
+   | `swarm` | `worker_role` | `roles`, `stages` |
+
+   If unexpected keys are present, **warn** that the declared pattern
+   may not match the intended topology. Ask the user to confirm.
+
+   #### Watchdog prerequisite
+
+   If the preset has `watchdog: true`, verify that the `monitor` role
+   exists in the global `roles:` section. If missing, **abort** —
+   the watchdog cannot be spawned without a role definition.
+
+   #### Deprecated preset completeness
+
+   If the preset has `deprecated: true` but no `successor` field,
+   **warn** that no replacement can be suggested. The user can still
+   proceed.
+
+   #### Reserved names
+
+   If any role name in the preset matches `monitor` or `judge`,
+   **warn** that these names have special behavior in hooks
+   (exemption from quality gates, speculative gate branching). Using
+   them as regular specialist names will cause incorrect gate logic.
+
+5. **Determine pattern** from the selected preset's `pattern` field.
    If absent, default to `fan-out`. If the preset has
    `deprecated: true`, warn the user and suggest the `successor`
    preset instead. Proceed only if the user confirms.
 
-5. **Route to pattern skill** — read and follow the corresponding
+6. **Route to pattern skill** — read and follow the corresponding
    skill:
 
    | Pattern | Skill |
@@ -95,7 +164,7 @@ this plugin's scope.
    Pass through: goal, target, selected roles/preset, and any
    user context.
 
-6. **Watchdog modifier** — if the preset has `watchdog: true`, the lead
+7. **Watchdog modifier** — if the preset has `watchdog: true`, the lead
    must spawn a monitor agent immediately after creating the team (the
    pattern skill's "Create Team" step). Spawn it BEFORE spawning any
    specialist/worker agents.
