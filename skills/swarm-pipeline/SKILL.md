@@ -17,9 +17,10 @@ Orchestrate sequential stages with dependency edges. Handles two
 config shapes:
 
 - **`pattern: pipeline`** with `stages` array — linear chain where
-  each stage blocks the next
+  each stage blocks the next. Stages support multiple `roles`.
 - **`pattern: task-graph`** with `nodes` map — arbitrary DAG with
-  `depends_on` edges supporting fan-in and fan-out
+  `depends_on` edges supporting fan-in and fan-out. Each node has
+  a single `role` (not a list).
 
 Pipeline is a degenerate task-graph (linear topology). Both use the
 same `blocks`/`blockedBy` primitives for automatic stage

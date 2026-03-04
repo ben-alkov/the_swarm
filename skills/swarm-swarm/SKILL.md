@@ -69,10 +69,10 @@ preset config.
 
 From the preset, determine:
 
-- **Worker role**: the role all workers share (from preset or
-  default to `researcher`)
-- **Worker count**: how many concurrent workers to spawn (from
-  preset `worker_count` or default to 3)
+- **`worker_role`**: the role all workers share (default:
+  `researcher`)
+- **`worker_count`**: how many concurrent workers to spawn
+  (default: 3)
 
 ### Validation
 

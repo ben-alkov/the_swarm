@@ -285,8 +285,9 @@ Your name is reducer. You are part of team {team_name}.
 You are the reducer in a map-reduce operation with {N} mappers.
 
 Instructions:
-- Your task is blocked until all mappers complete. Wait for the
-  lead to forward mapper outputs to you.
+- Your task is blocked until all mappers complete. It will unblock
+  automatically when dependencies finish — the lead will forward
+  mapper outputs to you shortly after.
 - Once you receive all mapper outputs, merge them into a unified
   result.
 - Claim your task from TaskList, mark it in_progress, then

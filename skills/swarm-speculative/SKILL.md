@@ -192,6 +192,8 @@ For each approach, spawn one implementer agent via `Task` with:
 - `isolation`: `worktree`
 - `model`: from the approach role config (if specified)
 - `mode`: `"plan"` if `plan_approval: true`, omit otherwise
+  (this is the Task tool's `mode` parameter — verify it exists
+  before relying on it for plan-approval gating)
 - `run_in_background`: `true`
 - `prompt`: composed from the parts below
 
@@ -261,8 +263,9 @@ You are the judge in a speculative execution with {N} competing
 approaches.
 
 Instructions:
-- Your task is blocked until all approaches complete. Wait for
-  the lead to forward approach summaries to you.
+- Your task is blocked until all approaches complete. It will
+  unblock automatically when dependencies finish — the lead will
+  forward approach summaries to you shortly after.
 - Once you receive all approach reports, evaluate each one:
   - Check out each approach branch
   - Run tests and verify correctness
