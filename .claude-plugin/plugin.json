@@ -9,5 +9,15 @@
   "homepage": "https://github.com/ben-alkov/the_swarm",
   "repository": "https://github.com/ben-alkov/the_swarm",
   "license": "GPL3",
-  "keywords": ["swarm", "parallel", "specialists", "review", "orchestration", "teams"]
+  "keywords": ["swarm", "parallel", "specialists", "review", "orchestration", "teams"],
+  "hooks": "hooks/hooks.json",
+  "skills": [
+    "skills/swarm/SKILL.md",
+    "skills/swarm-fan-out/SKILL.md",
+    "skills/swarm-map-reduce/SKILL.md",
+    "skills/swarm-pipeline/SKILL.md",
+    "skills/swarm-speculative/SKILL.md",
+    "skills/swarm-swarm/SKILL.md"
+  ],
+  "config": "config/swarm-roles.yaml"
 }

@@ -5,14 +5,14 @@
     "email": "ben.alkov@gmail.com"
   },
   "metadata": {
-    "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
-    "version": "0.1.0"
+    "description": "Multi-pattern orchestration for Claude Code — fan-out, swarm, pipeline, map-reduce, speculative, and watchdog patterns for concurrent review, analysis, implementation, and research",
+    "version": "0.2.0"
   },
   "plugins": [
     {
-  "name": "the_swarm",
+      "name": "the_swarm",
       "source": "./",
-      "description": "Parallel specialist orchestration for Claude Code — fan-out read-only specialists for concurrent review, analysis, and research",
+      "description": "Multi-pattern orchestration for Claude Code — fan-out, swarm, pipeline, map-reduce, speculative, and watchdog patterns for concurrent review, analysis, implementation, and research",
       "category": "",
       "tags": ["swarm", "parallel", "specialists", "review", "orchestration", "teams", "claude-code"]
     }
