@@ -19,9 +19,22 @@ fi
 
 INPUT=$(cat)
 
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 TEAM_NAME=$(echo "$INPUT" | jq -r '.team_name // empty')
 TEAMMATE_NAME=$(echo "$INPUT" | jq -r '.teammate_name // empty')
 TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+
+# Resolve the teammate's own transcript.
+# TeammateIdle provides transcript_path as the *parent* session's transcript,
+# not the teammate's. The teammate's transcript lives in the subagents/
+# subdirectory of the parent session, named agent-{session_id}.jsonl.
+if [[ -n "$TRANSCRIPT_PATH" && -n "$SESSION_ID" ]]; then
+  PARENT_DIR=$(dirname "$TRANSCRIPT_PATH")
+  AGENT_TRANSCRIPT="${PARENT_DIR}/subagents/agent-${SESSION_ID}.jsonl"
+  if [[ -f "$AGENT_TRANSCRIPT" ]]; then
+    TRANSCRIPT_PATH="$AGENT_TRANSCRIPT"
+  fi
+fi
 
 # Only apply to swarm teams
 if [[ -z "$TEAM_NAME" || ! "$TEAM_NAME" =~ ^swarm- ]]; then
