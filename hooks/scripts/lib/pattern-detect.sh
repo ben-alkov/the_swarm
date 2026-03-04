@@ -6,6 +6,12 @@
 #   swarm-{pattern}-{goal}-{ts}
 # Falls back to "fan-out" for v1 team names without pattern segment.
 
+# Guard against direct execution — this file must be sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  echo "Error: pattern-detect.sh must be sourced, not executed directly" >&2
+  exit 1
+fi
+
 PATTERN_RE='^swarm-(fan-out|swarm|pipeline|task-graph'
 PATTERN_RE+='|map-reduce|speculative)-'
 if [[ "$TEAM_NAME" =~ $PATTERN_RE ]]; then

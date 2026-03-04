@@ -12,6 +12,11 @@
 
 set -euo pipefail
 
+# Fail open if jq is not installed — silent bypass is worse than no gate
+if ! command -v jq >/dev/null 2>&1; then
+  exit 0
+fi
+
 INPUT=$(cat)
 
 TEAM_NAME=$(echo "$INPUT" | jq -r '.team_name // empty')
@@ -31,33 +36,38 @@ case "$PATTERN" in
   fan-out|swarm|map-reduce)
     # All agents must send findings via SendMessage before completing
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+      # Transcript uses compact JSON ("name":"SendMessage") — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "Task '$TASK_SUBJECT' cannot be completed until you send your findings to the team lead via SendMessage." >&2
+    echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you send your findings to the team lead via SendMessage." >&2
     exit 2
     ;;
   pipeline|task-graph)
     # Stage agents: allow completion after SendMessage OR after committing
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"\|"git commit"' \
+      # Transcript uses compact JSON — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
           "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "Task '$TASK_SUBJECT' cannot be completed until you send findings or commit changes." >&2
+    echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you send findings or commit changes." >&2
     exit 2
     ;;
   speculative)
     # Approach agents: must commit; judge: must SendMessage
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"\|"git commit"' \
+      # Transcript uses compact JSON — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
           "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "Task '$TASK_SUBJECT' cannot be completed until you commit your approach or send a verdict." >&2
+    # NOTE: Cannot distinguish approach agents (should commit) from judge
+    # (should SendMessage) by team name alone — accepted design limitation
+    echo "$TEAMMATE_NAME: Task '$TASK_SUBJECT' cannot be completed until you commit your approach or send a verdict." >&2
     exit 2
     ;;
   *)

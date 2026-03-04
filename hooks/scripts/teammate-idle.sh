@@ -11,6 +11,11 @@
 
 set -euo pipefail
 
+# Fail open if jq is not installed — silent bypass is worse than no gate
+if ! command -v jq >/dev/null 2>&1; then
+  exit 0
+fi
+
 INPUT=$(cat)
 
 TEAM_NAME=$(echo "$INPUT" | jq -r '.team_name // empty')
@@ -29,33 +34,38 @@ case "$PATTERN" in
   fan-out|swarm|map-reduce)
     # All agents must report findings via SendMessage
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+      # Transcript uses compact JSON ("name":"SendMessage") — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "You haven't sent your findings to the team lead yet. Review the target, compile your analysis, and send your findings via SendMessage before stopping." >&2
+    echo "$TEAMMATE_NAME: You haven't sent your findings to the team lead yet. Review the target, compile your analysis, and send your findings via SendMessage before stopping." >&2
     exit 2
     ;;
   pipeline|task-graph)
     # Stage agents: allow idle after SendMessage OR after committing
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"\|"git commit"' \
+      # Transcript uses compact JSON — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
           "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "You haven't sent findings or committed changes yet." >&2
+    echo "$TEAMMATE_NAME: You haven't sent findings or committed changes yet." >&2
     exit 2
     ;;
   speculative)
     # Approach agents: must commit; judge: must SendMessage
     if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
-      if grep -q '"SendMessage"\|"git commit"' \
+      # Transcript uses compact JSON — match both forms
+      if grep -qE '"name"\s*:\s*"SendMessage"|"git commit"' \
           "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
     fi
-    echo "You haven't committed your approach or sent a verdict." >&2
+    # NOTE: Cannot distinguish approach agents (should commit) from judge
+    # (should SendMessage) by team name alone — accepted design limitation
+    echo "$TEAMMATE_NAME: You haven't committed your approach or sent a verdict." >&2
     exit 2
     ;;
   *)
