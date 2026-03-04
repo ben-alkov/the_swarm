@@ -7,10 +7,3 @@
 # Good for large codebases with many similar-sized modules.
 
 preset: swarm-module-audit
-
-# Inline preset definition (or define in swarm-roles.yaml):
-# swarm-module-audit:
-#   description: "Audit all modules using a worker pool"
-#   pattern: swarm
-#   worker_role: researcher
-#   worker_count: 4

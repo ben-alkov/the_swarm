@@ -68,6 +68,7 @@ roles:
   researcher:
     description: "Research a topic across documentation, web, and codebase"
     subagent_type: Explore
+    model: sonnet
     prompt: |
       You are a research specialist. Investigate the assigned topic by:
       - Searching the codebase for relevant patterns and implementations
@@ -180,7 +181,7 @@ presets:
     roles: [security-reviewer]
 
   implement-and-review:
-    description: "Implementation with concurrent review"
+    description: "Implementation with concurrent review (reviewer sees pre-change code; prefer implement-then-review for sequential correctness)"
     pattern: fan-out
     roles: [implementer, quality-reviewer]
 
@@ -229,6 +230,12 @@ presets:
     plan_approval: true
 
   # v2 Watchdog modifier presets
+  swarm-module-audit:
+    description: "Audit all modules using a worker pool"
+    pattern: swarm
+    worker_role: researcher
+    worker_count: 4
+
   monitored-review:
     description: "PR review with active monitoring"
     pattern: fan-out
