@@ -47,12 +47,7 @@ skill.
    user context.
 
 6. **Watchdog modifier** — if the preset has `watchdog: true`,
-   spawn an additional monitor agent alongside the pattern's
-   normal agents:
-
-   - Use the `monitor` role from `swarm-roles.yaml`
-   - Spawn with `run_in_background: true`
-   - The monitor observes via TaskList and sends alerts to the
-     lead — it does not intervene directly
-   - Spawn the monitor after the pattern skill creates the team
-     (step 6 or equivalent in the pattern skill)
+   pass `watchdog: true` through to the pattern skill. The
+   pattern skill is responsible for spawning the monitor agent
+   after team creation (see each pattern skill's spawn step).
+   The dispatcher does NOT spawn the monitor itself.

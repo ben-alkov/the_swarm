@@ -385,6 +385,7 @@ or discard.
 When the user indicates they're done:
 
 1. Send `shutdown_request` to each agent via `SendMessage`
+   (include the monitor agent if `watchdog: true` was active)
 2. Wait for `shutdown_response` from each
 3. Call `TeamDelete` to clean up
 
