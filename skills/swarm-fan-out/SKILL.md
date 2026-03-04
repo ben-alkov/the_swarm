@@ -115,7 +115,7 @@ Generate the timestamp from the current date/time as a Unix epoch.
 ### Create Team
 
 ```text
-TeamCreate with team_name: "swarm-{goal-slug}-{timestamp}"
+TeamCreate with team_name: "swarm-fan-out-{goal-slug}-{timestamp}"
 ```
 
 ### Create Tasks
