@@ -1,36 +1,17 @@
+<!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
- ▐▛███▜▌   Claude Code v2.1.58
-▝▜█████▛▘  claude-opus-4-6@default · API Usage Billing
-  ▘▘ ▝▝    ~/Source/the_swarm
+❯ Use the swarm to do a thorough review of the current repo. Focus on logical
+  consistency, factuality, correctness (in terms of functionality - what the
+   source files claim to do). Examine safety and security, but at a surface
+  level: there is very minimal excutable code in here, just some hook scripts.
 
-  Welcome to Opus 4.6
-
-❯ Use the swarm to do a thorough review of the current repo. Focus on
-  logical consistency, factuality, correctness (in terms of functionality -
-   what the source files claim to do). Examine safety and security, but at
-  a surface level: there is very minimal excutable code in here, just some
-  hook scripts.
   Ignore lint issues like spelling, formatting, etc.
 
 ● I'll start by understanding the repo structure, then dispatch parallel review
   agents.
 
-● Explore(Explore repo structure) Sonnet 4.6
-  ⎿  Done (29 tool uses · 58.8k tokens · 1m 28s)
-  (ctrl+o to expand)
-
 ● Good, I have a full picture. Now I'll dispatch parallel review agents for
   different aspects.
-
-● 4 superpowers:code-reviewer agents launched (ctrl+o to expand)
-   ├─ Review skills for correctness
-   │  ⎿  Running in the background (↓ to manage)
-   ├─ Review config/YAML correctness
-   │  ⎿  Running in the background (↓ to manage)
-   ├─ Review hooks and plugin manifest
-   │  ⎿  Running in the background (↓ to manage)
-   └─ Review design docs consistency
-      ⎿  Running in the background (↓ to manage)
 
 ● Four review agents are running in parallel:
 
@@ -43,28 +24,15 @@
 
   I'll synthesize findings once they complete.
 
-● I'll wait for the background agents to finish — they're still working through
-  the files.
-
-● Bash(sleep 120 && echo "check")
-  ⎿  check
-
-● Agent "Review config/YAML correctness" completed
-
-● Agent "Review skills for correctness" completed
-
-● Agent "Review design docs consistency" completed
-
-● Agent "Review hooks and plugin manifest" completed
-
 ● All four review agents have completed. Here's the synthesized report.
 
-  ---
-  The Swarm — Comprehensive Review
+---
 
-  Critical Issues
+# The Swarm — Comprehensive Review
 
-  1. Team name format mismatch in swarm-fan-out/SKILL.md (Step 5)
+## Critical Issues
+
+1. Team name format mismatch in swarm-fan-out/SKILL.md (Step 5)
 
   The "Team Naming" header says swarm-fan-out-{goal-slug}-{timestamp}, but the
   TeamCreate code block directly below it says swarm-{goal-slug}-{timestamp} —
@@ -76,10 +44,11 @@
 
   Fix: Change the TeamCreate call to swarm-fan-out-{goal-slug}-{timestamp}.
 
-  ---
-  Important Issues
+---
 
-  2. Watchdog spawn responsibility is dual-owned and incomplete
+## Important Issues
+
+2. Watchdog spawn responsibility is dual-owned and incomplete
 
   Both the dispatcher (swarm/SKILL.md step 6) and the fan-out sub-skill
   (swarm-fan-out/SKILL.md step 6) independently describe spawning the monitor
@@ -92,7 +61,7 @@
   Fix: Choose one authority for watchdog spawning. Add monitor shutdown to all
   pattern skills' teardown steps.
 
-  3. swarm-module-audit example references a non-existent preset
+3. swarm-module-audit example references a non-existent preset
 
   config/examples/swarm-module-audit.yaml references preset: swarm-module-audit,
   which does not exist in swarm-roles.yaml. The inline definition is commented
@@ -101,7 +70,7 @@
   Fix: Either add the preset to swarm-roles.yaml or update the example to use an
   existing preset.
 
-  4. implement-and-review preset is architecturally problematic
+4. implement-and-review preset is architecturally problematic
 
   This fan-out preset pairs an implementer (writes code in a worktree) with a
   quality-reviewer (reads-only). Running them concurrently means the reviewer
@@ -112,95 +81,97 @@
   Fix: Remove the preset, restrict it to read-only roles, or add a clear caveat
   about its limitations.
 
-  5. marketplace.json is stale
+5. marketplace.json is stale
 
   Version is 0.1.0 (should be 0.2.0). Description mentions only fan-out (should
   reflect all six patterns). Indentation is also inconsistent on line 13.
 
-  6. mode: "plan" Task parameter is unverified
+6. mode: "plan" Task parameter is unverified
 
   swarm-speculative/SKILL.md step 7 uses mode: "plan" as a Task tool parameter.
   The design doc references CLAUDE_CODE_PLAN_MODE_REQUIRED (an env var, not a
   parameter). If the actual Task parameter isn't named mode, plan-approval
   gating silently fails to activate.
 
-  7. Hooks: TEAMMATE_NAME extracted but never used
+7. Hooks: TEAMMATE_NAME extracted but never used
 
   Both teammate-idle.sh and task-completed.sh parse teammate_name from JSON
   input but never reference it. Under set -u this is benign (it's set, just
   unused), but it's dead code. Using it in the feedback message would make the
   gate more actionable.
 
-  8. Hooks: jq absence not handled
+8. Hooks: jq absence not handled
 
   Neither hook script checks that jq is installed. If absent, the script exits
   with code 127. Claude Code treats non-0/non-2 exits as non-blocking errors and
   proceeds silently — meaning the quality gate is silently bypassed. A command
   -v jq guard exiting 0 (fail-open) would be safer.
 
-  9. Hooks: speculative case can't distinguish approach agents from the judge
+9. Hooks: speculative case can't distinguish approach agents from the judge
 
   The hook accepts either SendMessage or git commit from any speculative
   teammate. Approach agents should commit; the judge should SendMessage. The
   team name alone doesn't encode role, so this conflation is an accepted
   design-level limitation — but it should be documented in a comment.
 
-  10. Hooks: grep transcript matching is brittle
+10. Hooks: grep transcript matching is brittle
 
   Searching for "SendMessage" in JSONL transcripts can match assistant prose,
   blocked calls, or other agents' text. Searching for "git commit" is even
   weaker. A more specific pattern like "name": "SendMessage" would reduce false
   positives. This is acknowledged as a design tradeoff.
 
-  ---
-  Suggestions
+---
 
-  11. worker_role/worker_count config keys not explicitly named in
-  swarm-swarm/SKILL.md
+## Suggestions
+
+11. worker_role/worker_count config keys not explicitly named in
+swarm-swarm/SKILL.md
 
   Step 2 says "determine: Worker role" but doesn't name the YAML key
   worker_role. Compare to swarm-map-reduce/SKILL.md which explicitly names
   map_role and reduce_role.
 
-  12. Task-graph single-role-per-node constraint is undocumented
+12. Task-graph single-role-per-node constraint is undocumented
 
   Pipeline stages support multiple roles, but task-graph nodes use singular
   role:. The skill never explicitly states this asymmetry, which could confuse
   an agent trying to add multiple roles to a node.
 
-  13. Reducer/judge unblocking precedes data delivery
+13. Reducer/judge unblocking precedes data delivery
 
   The reducer and judge tasks auto-unblock when dependencies complete, but the
   lead hasn't forwarded mapper/approach outputs via SendMessage yet. Adding a
   note to the reducer/judge prompts ("your task unblocking precedes receiving
   data — the lead will forward outputs shortly after") would prevent confusion.
 
-  14. researcher role missing model field
+14. researcher role missing model field
 
   The four reviewer roles all pin model: sonnet. The researcher role omits it
   with no comment explaining why. Worth a deliberate decision.
 
-  15. pattern-detect.sh has a shebang but is meant to be sourced
+15. pattern-detect.sh has a shebang but is meant to be sourced
 
   Adding a [[ "${BASH_SOURCE[0]}" == "${0}" ]] guard would prevent accidental
   direct execution.
 
-  16. plugin.json doesn't declare hooks/skills/config
+16. plugin.json doesn't declare hooks/skills/config
 
   The manifest has metadata but no declarations for the hooks, skills, or config
   files. If the plugin loader doesn't auto-discover hooks/hooks.json and
   skills/*/SKILL.md, these would be invisible.
 
-  ---
-  What's Working Well
+---
 
-  - The dispatcher + sub-skill architecture is clean and coherent
-  - Pattern distinctions are correctly drawn throughout
-  - Config schema is cleanly additive — v1 presets work unchanged
-  - Council deferral is explicitly documented with clear rationale
-  - pattern-detect.sh consolidation is an improvement over the design doc's
-    two-file approach
-  - Hook exit codes follow the Claude Code API correctly
-  - Cross-references between skills (tool names, config keys, team conventions)
-    are consistent outside the issues noted above
-  - The v1 backward compatibility path works correctly
+## What's Working Well
+
+- The dispatcher + sub-skill architecture is clean and coherent
+- Pattern distinctions are correctly drawn throughout
+- Config schema is cleanly additive — v1 presets work unchanged
+- Council deferral is explicitly documented with clear rationale
+- pattern-detect.sh consolidation is an improvement over the design doc's
+  two-file approach
+- Hook exit codes follow the Claude Code API correctly
+- Cross-references between skills (tool names, config keys, team conventions)
+  are consistent outside the issues noted above
+- The v1 backward compatibility path works correctly

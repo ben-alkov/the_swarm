@@ -2,8 +2,8 @@
 
 **Date:** 2026-02-27
 **Goal:** Deep cross-cutting adversarial analysis of the_swarm plugin to surface
-functionality gaps, unintended consequences, overlooked subtleties, and dangerous
-corner cases.
+functionality gaps, unintended consequences, overlooked subtleties, and
+dangerous corner cases.
 
 ## Pattern
 
@@ -12,14 +12,14 @@ distinct lens. Lead synthesizes into a single consolidated report.
 
 ## Analysts
 
-| # | Name | Lens |
-|---|---|---|
-| 1 | `state-machine` | State Machine Coherence |
-| 2 | `failure-modes` | Failure & Error Propagation |
-| 3 | `platform-friction` | Platform Constraint Friction |
-| 4 | `spec-drift` | Specification vs. Implementation Drift |
-| 5 | `edge-cases` | Combinatorial Edge Cases |
-| 6 | `bug-validation` | Known-Bug Fix Validation |
+| # | Name                | Lens                                   |
+|---|---------------------|----------------------------------------|
+| 1 | `state-machine`     | State Machine Coherence                |
+| 2 | `failure-modes`     | Failure & Error Propagation            |
+| 3 | `platform-friction` | Platform Constraint Friction           |
+| 4 | `spec-drift`        | Specification vs. Implementation Drift |
+| 5 | `edge-cases`        | Combinatorial Edge Cases               |
+| 6 | `bug-validation`    | Known-Bug Fix Validation               |
 
 ### 1. State Machine Coherence
 

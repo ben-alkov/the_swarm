@@ -1,3 +1,5 @@
+<!-- markdownlint-disable line-length -->
+
 # Adversarial Analysis Fixes Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to
@@ -183,13 +185,13 @@ git commit -m "fix(hooks): exempt monitor agent from quality gates"
 
 In each file, replace:
 
-```
+```markdown
 ~/.claude/plugins/swarm/config/swarm-roles.yaml
 ```
 
 with:
 
-```
+```markdown
 $CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml
 ```
 

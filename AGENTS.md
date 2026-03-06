@@ -1,3 +1,5 @@
+<!-- markdownlint-disable link-image-style -->
+
 # the_swarm
 
 Claude Code plugin for multi-pattern multi-agent orchestration, using CC's built

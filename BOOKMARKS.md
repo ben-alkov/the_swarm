@@ -1,3 +1,5 @@
+<!-- markdownlint-disable link-image-style -->
+
 # Bookmarks
 
 Progressive disclosure for task-specific documentation and references.
