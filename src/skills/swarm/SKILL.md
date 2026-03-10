@@ -172,6 +172,10 @@ this plugin's scope.
    Use the `monitor` role from
    `$CLAUDE_PLUGIN_ROOT/config/swarm-roles.yaml`:
 
+   Read `monitor_cron_interval_seconds` from
+   `$CLAUDE_PLUGIN_ROOT/.claude-plugin/settings.json` (default: 60).
+   Include the resolved interval in the monitor's spawn prompt.
+
    - `name`: `monitor`
    - `subagent_type`: from the monitor role config (typically `Explore`)
    - `run_in_background`: `true`
@@ -179,10 +183,13 @@ this plugin's scope.
      - Identity: "Your name is monitor. You are part of team {team_name}."
      - Immediately send a "Monitoring started" message to the team lead
        via SendMessage (this satisfies the idle hook gate)
-     - Periodically check TaskList for anomalies (stuck tasks, idle
-       workers without findings)
-     - Send alerts to the team lead via SendMessage when anomalies are
-       detected
+     - Call CronCreate with:
+       - `intervalSeconds`: {monitor_cron_interval_seconds} (read from
+         `$CLAUDE_PLUGIN_ROOT/.claude-plugin/settings.json`, default 60)
+       - `prompt`: "Check TaskList for anomalies: tasks stuck in_progress,
+         idle workers without findings, failed or blocked tasks. Send a
+         SendMessage alert to the team lead for each anomaly found. Do not
+         intervene directly — report only."
      - Do not intervene directly — report to the lead
 
    The monitor does not get its own task — it observes and reports.

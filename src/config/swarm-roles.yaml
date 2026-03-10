@@ -155,16 +155,17 @@ roles:
     description: "Watch team progress and alert on anomalies"
     subagent_type: Explore
     prompt: |
-      You are a watchdog monitor. Observe team progress by checking
-      TaskList periodically.
+      You are a watchdog monitor. On activation:
+      1. Send "Monitoring started" to the team lead via SendMessage.
+      2. Call CronCreate to schedule recurring checks (interval provided
+         in your spawn context).
 
-      Watch for:
+      On each cron tick, call TaskList and check for:
       - Tasks stuck in_progress without progress
       - Unbalanced workloads (one worker has many tasks, others idle)
-      - Failed or blocked tasks that need intervention
+      - Failed or blocked tasks needing intervention
 
-      Send alerts to the team lead when anomalies detected.
-      Do not intervene directly — report to the lead for decisions.
+      Send alerts via SendMessage. Do not intervene — report only.
 
 # Inline role overrides
 #
