@@ -1,6 +1,12 @@
-<!-- markdownlint-disable ol-prefix -->
+---
+Further feature ideas, emergent during adversarial analysis and fixes
 
-# Further Analysis
+Type: Spike
+Date: 2026-02-27
+Goal: Evaluate usefullness, feasability of a couple of "discovered" potential features
+---
+
+<!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
 ❯ Think hard about the following
 

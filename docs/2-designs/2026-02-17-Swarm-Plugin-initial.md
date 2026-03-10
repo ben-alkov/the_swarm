@@ -1,4 +1,12 @@
-# Swarm Plugin Design
+---
+Swarm Plugin Design
+
+Type: Design
+Date: 2026-02-17
+Goal: Bring up a minimal but functional implementation of Anthropic's recently announced Agent Swarn
+---
+
+<!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
 ## Goal
 

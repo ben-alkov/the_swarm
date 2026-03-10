@@ -1,4 +1,11 @@
-# Swarm Worktree Isolation Implementation Plan
+---
+Worktree Isolation Implementation
+
+Type: Implementation Plan
+Date: 2026-02-23
+---
+
+<!-- markdownlint-disable first-line-h1 line-length -->
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to
 > implement this plan task-by-task.
@@ -14,13 +21,14 @@ usage.
 
 **Tech Stack:** YAML config, Markdown skill definitions, Claude Code Task tool
 
-**Design doc:** `docs/designs/2026-02-23-swarm-worktree-isolation-design.md`
+**Design doc:** `2026-02-23-Worktree-Isolation.md`
 
 ---
 
 ### Task 1: Add implementer role and preset to swarm-roles.yaml
 
 **Files:**
+
 - Modify: `plugins/swarm/config/swarm-roles.yaml:68-91`
 
 **Step 1: Add the implementer role**
@@ -74,6 +82,7 @@ git commit -m "feat(swarm): add implementer role with worktree isolation"
 ### Task 2: Update dispatch logic in SKILL.md
 
 **Files:**
+
 - Modify: `plugins/swarm/skills/swarm-dispatch/SKILL.md:29,127-137`
 
 **Step 1: Update "When NOT to Use" section**
@@ -134,6 +143,7 @@ git commit -m "feat(swarm): add isolation handling to dispatch logic"
 ### Task 3: Update README.md
 
 **Files:**
+
 - Modify: `plugins/swarm/README.md:2-5,39-53,89-121`
 
 **Step 1: Update the opening description**

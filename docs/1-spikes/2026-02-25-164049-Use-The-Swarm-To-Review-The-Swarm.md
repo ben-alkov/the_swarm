@@ -1,3 +1,12 @@
+---
+Swarm review of the_swarm
+
+Type: Spike
+Date: 2026-02-25-164049
+Goal: A thorough review of the_swarm, with a focus on logical consistency, factuality, and correctness
+Specialists: skills, config/yaml, hooks & plugin manifest, docs vs implementation
+---
+
 <!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
 ❯ Use the swarm to do a thorough review of the current repo. Focus on logical
@@ -27,8 +36,6 @@
 ● All four review agents have completed. Here's the synthesized report.
 
 ---
-
-# The Swarm — Comprehensive Review
 
 ## Critical Issues
 

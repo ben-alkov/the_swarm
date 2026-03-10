@@ -1,6 +1,7 @@
+<!-- markdownlint-disable ol-prefix line-length -->
+
 Use the swarm to update the swarm plugin to use the new "isolation" frontmatter
-field (Ref:
-<https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields>).
+field (Ref: https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields).
 
 Use the following references, along with the "claude-code-guide" agent, as references
 

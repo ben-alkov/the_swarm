@@ -1,10 +1,10 @@
 ---
 Swarm Adversarial Analysis Report
 
+Type: Spike
+Date: 2026-02-27
 Goal: Deep cross-cutting adversarial analysis of the_swarm plugin
-Target: All files in /home/balkov/Source/the_swarm/
 Specialists: state-machine, failure-modes, platform-friction, spec-drift, edge-cases, bug-validation
-
 ---
 
 <!-- markdownlint-disable ol-prefix first-line-h1 line-length -->

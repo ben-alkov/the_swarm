@@ -13,12 +13,12 @@ Progressive disclosure for task-specific documentation and references.
 
 ## Architecture and Patterns
 
-### [v2 Design Document](.agents/plans/2026-02-25-swarm-v2-design.md)
+### [v2 Design Document](./docs/2-designs/2026-02-25-v2.md)
 
 Definitive architecture rationale — pattern taxonomy, platform constraints,
 migration path, and scale limits.
 
-### [v2 Implementation Plan](.agents/plans/2026-02-25-swarm-v2-plan.md)
+### [v2 Implementation Plan](./docs/3-implementation_plans/2026-02-25-v2.md)
 
 Step-by-step implementation plan for the v2 architecture.
 

@@ -1,9 +1,15 @@
-# Adversarial Analysis Design
+---
 
-**Date:** 2026-02-27
-**Goal:** Deep cross-cutting adversarial analysis of the_swarm plugin to surface
-functionality gaps, unintended consequences, overlooked subtleties, and
-dangerous corner cases.
+Adversarial Analysis
+
+Type: Design
+Date: 2026-02-27
+Goal: Deep cross-cutting adversarial analysis of the_swarm plugin to surface functionality gaps, unintended consequences, overlooked subtleties, and dangerous corner cases.
+Specialists: state-machine, failure-modes, platform-friction, spec-drift, edge-cases, bug-validation
+
+---
+
+# Adversarial Analysis
 
 ## Pattern
 

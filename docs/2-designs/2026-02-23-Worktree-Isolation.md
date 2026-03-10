@@ -1,4 +1,13 @@
-# Swarm Plugin: Worktree Isolation Support
+---
+Swarm Plugin Worktree Isolation Support
+
+Type: Design
+Date: 2026-02-23
+Goal: Implement Worktrees for swarm agents
+(optional) Specialists: state-machine, failure-modes, platform-friction, spec-drift, edge-cases, bug-validation
+---
+
+<!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
 ## Problem
 
@@ -119,8 +128,8 @@ The swarm lead does not need to manage worktrees directly.
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `config/swarm-roles.yaml` | Add `isolation` field, `implementer` role, `implement-and-review` preset |
-| `skills/swarm-dispatch/SKILL.md` | Update step 6 dispatch logic, update "When NOT to Use" |
-| `README.md` | Document isolation support, role schema, auto-upgrade behavior |
+| File                             | Change                                                                   |
+|----------------------------------|--------------------------------------------------------------------------|
+| `config/swarm-roles.yaml`        | Add `isolation` field, `implementer` role, `implement-and-review` preset |
+| `skills/swarm-dispatch/SKILL.md` | Update step 6 dispatch logic, update "When NOT to Use"                   |
+| `README.md`                      | Document isolation support, role schema, auto-upgrade behavior           |

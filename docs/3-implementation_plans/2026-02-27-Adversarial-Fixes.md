@@ -1,6 +1,12 @@
-<!-- markdownlint-disable line-length -->
+---
+Adversarial Analysis Fixes Implementation Plan
 
-# Adversarial Analysis Fixes Implementation Plan
+Type: Implementation Plan
+Date: 2026-02-27
+Goal: Fix issues discovered during the Adversarial Analysis
+---
+
+<!-- markdownlint-disable ol-prefix first-line-h1 line-length -->
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to
 > implement this plan task-by-task.
