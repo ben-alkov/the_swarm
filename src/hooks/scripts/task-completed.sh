@@ -6,7 +6,8 @@
 # Pattern-aware: routes to appropriate gate logic per pattern.
 #
 # Input (stdin JSON): task_id, task_subject, task_description,
-#                     teammate_name, team_name, transcript_path
+#                     teammate_name, team_name, transcript_path,
+#                     agent_id, agent_type
 # Exit 0: allow completion
 # Exit 2: block completion, stderr is sent as feedback
 
@@ -24,6 +25,9 @@ TEAM_NAME=$(echo "$INPUT" | jq -r '.team_name // empty')
 TEAMMATE_NAME=$(echo "$INPUT" | jq -r '.teammate_name // empty')
 TASK_SUBJECT=$(echo "$INPUT" | jq -r '.task_subject // empty')
 TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+# shellcheck disable=SC2034  # reserved for future transcript path resolution
+AGENT_ID=$(echo "$INPUT" | jq -r '.agent_id // empty')
+AGENT_TYPE=$(echo "$INPUT" | jq -r '.agent_type // empty')
 
 # Only apply to swarm teams
 if [[ -z "$TEAM_NAME" || ! "$TEAM_NAME" =~ ^swarm- ]]; then
@@ -39,7 +43,7 @@ if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
 fi
 
 # Monitor agents are exempt from quality gates — they observe, not produce
-if [[ "$TEAMMATE_NAME" == "monitor" ]]; then
+if [[ "$AGENT_TYPE" == "monitor" || "$TEAMMATE_NAME" == "monitor" ]]; then
   exit 0
 fi
 

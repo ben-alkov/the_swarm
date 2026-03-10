@@ -5,7 +5,8 @@
 # task. Only fires for teammates in swarm-* teams.
 # Pattern-aware: routes to appropriate gate logic per pattern.
 #
-# Input (stdin JSON): session_id, teammate_name, team_name, transcript_path
+# Input (stdin JSON): session_id, teammate_name, team_name, transcript_path,
+#                     agent_id, agent_type
 # Exit 0: allow idle (teammate may proceed to idle)
 # Exit 2: block idle, stderr is sent as feedback to keep teammate working
 
@@ -23,16 +24,25 @@ SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 TEAM_NAME=$(echo "$INPUT" | jq -r '.team_name // empty')
 TEAMMATE_NAME=$(echo "$INPUT" | jq -r '.teammate_name // empty')
 TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+AGENT_ID=$(echo "$INPUT" | jq -r '.agent_id // empty')
+AGENT_TYPE=$(echo "$INPUT" | jq -r '.agent_type // empty')
 
 # Resolve the teammate's own transcript.
 # TeammateIdle provides transcript_path as the *parent* session's transcript,
 # not the teammate's. The teammate's transcript lives in the subagents/
 # subdirectory of the parent session, named agent-{session_id}.jsonl.
-if [[ -n "$TRANSCRIPT_PATH" && -n "$SESSION_ID" ]]; then
+if [[ -n "$TRANSCRIPT_PATH" ]]; then
   PARENT_DIR=$(dirname "$TRANSCRIPT_PATH")
-  AGENT_TRANSCRIPT="${PARENT_DIR}/subagents/agent-${SESSION_ID}.jsonl"
-  if [[ -f "$AGENT_TRANSCRIPT" ]]; then
-    TRANSCRIPT_PATH="$AGENT_TRANSCRIPT"
+  if [[ -n "$AGENT_ID" ]]; then
+    AGENT_TRANSCRIPT="${PARENT_DIR}/subagents/agent-${AGENT_ID}.jsonl"
+    if [[ -f "$AGENT_TRANSCRIPT" ]]; then
+      TRANSCRIPT_PATH="$AGENT_TRANSCRIPT"
+    fi
+  elif [[ -n "$SESSION_ID" ]]; then
+    AGENT_TRANSCRIPT="${PARENT_DIR}/subagents/agent-${SESSION_ID}.jsonl"
+    if [[ -f "$AGENT_TRANSCRIPT" ]]; then
+      TRANSCRIPT_PATH="$AGENT_TRANSCRIPT"
+    fi
   fi
 fi
 
@@ -50,7 +60,7 @@ if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
 fi
 
 # Monitor agents are exempt from quality gates — they observe, not produce
-if [[ "$TEAMMATE_NAME" == "monitor" ]]; then
+if [[ "$AGENT_TYPE" == "monitor" || "$TEAMMATE_NAME" == "monitor" ]]; then
   exit 0
 fi
 
