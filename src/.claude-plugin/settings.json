@@ -1,0 +1,6 @@
+{
+  "monitor_cron_interval_seconds": 60,
+  "idle_escalation_threshold": 3,
+  "reviewer_model": "sonnet",
+  "max_agents": 7
+}
