@@ -8,6 +8,7 @@
 # Input (stdin JSON): session_id, teammate_name, team_name, transcript_path,
 #                     agent_id, agent_type
 # Exit 0: allow idle (teammate may proceed to idle)
+# Exit 0 + JSON {"continue": false}: hard-stop after repeated nudges
 # Exit 2: block idle, stderr is sent as feedback to keep teammate working
 
 set -euo pipefail
@@ -53,6 +54,34 @@ fi
 
 # Detect pattern from team name
 source "$(dirname "$0")/lib/pattern-detect.sh"
+source "$(dirname "$0")/lib/read-setting.sh"
+
+# Escalation: stop teammates after repeated nudges without progress
+IDLE_THRESHOLD=$(read_setting "idle_escalation_threshold" "3")
+COUNTER_DIR="${HOME}/temp/swarm-idle-counters"
+mkdir -p "$COUNTER_DIR"
+
+# Nudge (exit 2) or hard-stop (exit 0 + JSON) based on cycle count.
+# Uses jq for JSON construction to avoid injection from teammate names.
+nudge_or_stop() {
+  local message="$1"
+  local counter_file="${COUNTER_DIR}/swarm-idle-${TEAM_NAME}-${TEAMMATE_NAME}.count"
+  local count=0
+  if [[ -f "$counter_file" ]]; then
+    count=$(< "$counter_file")
+    [[ "$count" =~ ^[0-9]+$ ]] || count=0
+  fi
+  count=$((count + 1))
+  echo "$count" > "$counter_file"
+  if [[ "$count" -ge "$IDLE_THRESHOLD" ]]; then
+    rm -f "$counter_file"
+    jq -n --arg name "$TEAMMATE_NAME" --argjson count "$count" \
+      '{"continue": false, "stopReason": ($name + " stopped after " + ($count|tostring) + " idle cycles without expected output")}'
+    exit 0
+  fi
+  echo "$message" >&2
+  exit 2
+}
 
 # Fail open if transcript is unavailable — cannot verify, should not block
 if [[ -z "$TRANSCRIPT_PATH" || ! -f "$TRANSCRIPT_PATH" ]]; then
@@ -71,8 +100,7 @@ case "$PATTERN" in
     if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
       exit 0
     fi
-    echo "$TEAMMATE_NAME: You haven't sent your findings to the team lead yet. Review the target, compile your analysis, and send your findings via SendMessage before stopping." >&2
-    exit 2
+    nudge_or_stop "$TEAMMATE_NAME: You haven't sent your findings to the team lead yet. Review the target, compile your analysis, and send your findings via SendMessage before stopping."
     ;;
   pipeline|task-graph)
     # Stage agents: allow idle after SendMessage OR after committing
@@ -80,8 +108,7 @@ case "$PATTERN" in
         "$TRANSCRIPT_PATH" 2>/dev/null; then
       exit 0
     fi
-    echo "$TEAMMATE_NAME: You haven't sent findings or committed changes yet." >&2
-    exit 2
+    nudge_or_stop "$TEAMMATE_NAME: You haven't sent findings or committed changes yet."
     ;;
   speculative)
     # Approach agents must commit; judge must SendMessage
@@ -89,15 +116,13 @@ case "$PATTERN" in
       if grep -qE '"name"\s*:\s*"SendMessage"' "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
-      echo "$TEAMMATE_NAME: You haven't sent your verdict to the team lead yet." >&2
-      exit 2
+      nudge_or_stop "$TEAMMATE_NAME: You haven't sent your verdict to the team lead yet."
     else
       # Approach agents (approach-1, approach-2, etc.)
       if grep -q '"git commit"' "$TRANSCRIPT_PATH" 2>/dev/null; then
         exit 0
       fi
-      echo "$TEAMMATE_NAME: You haven't committed your approach yet." >&2
-      exit 2
+      nudge_or_stop "$TEAMMATE_NAME: You haven't committed your approach yet."
     fi
     ;;
   *)
