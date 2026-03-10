@@ -156,7 +156,7 @@ All tasks are independent — no `blocks`/`blockedBy` dependencies in v1.
 
 ## Step 6: Spawn Specialists
 
-For each role, spawn one teammate via `Task` with:
+For each role, spawn one teammate via `Agent` with:
 
 - `team_name`: the team name from step 5
 - `name`: the role name (e.g., `security-reviewer`)
@@ -175,9 +175,9 @@ Before spawning, check each role's `isolation` field:
     `Explore` or omits the field)
   - Print a note: `Role {name}: using general-purpose (worktree isolation
     requires write access)`
-  - Pass `isolation: "worktree"` to the `Task` tool call
+  - Pass `isolation: "worktree"` to the `Agent` tool call
 - If `isolation` is absent: use the role's `subagent_type` as-is (default:
-  `Explore`), do not pass `isolation` to Task
+  `Explore`), do not pass `isolation` to Agent
 
 ### Prompt Construction
 

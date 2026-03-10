@@ -183,7 +183,7 @@ TeamCreate with team_name: "swarm-speculative-{goal-slug}-{ts}"
 
 ### Spawn Implementers
 
-For each approach, spawn one implementer agent via `Task` with:
+For each approach, spawn one implementer agent via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `approach-{n}` (e.g., `approach-1`, `approach-2`)
@@ -192,7 +192,7 @@ For each approach, spawn one implementer agent via `Task` with:
 - `isolation`: `worktree`
 - `model`: from the approach role config (if specified)
 - `mode`: `"plan"` if `plan_approval: true`, omit otherwise
-  (this is the Task tool's `mode` parameter — verify it exists
+  (this is the Agent tool's `mode` parameter — verify it exists
   before relying on it for plan-approval gating)
 - `run_in_background`: `true`
 - `prompt`: composed from the parts below
@@ -242,7 +242,7 @@ The `prompt` field from `swarm-roles.yaml` for the approach role.
 
 ### Spawn Judge
 
-Spawn one judge agent via `Task` with:
+Spawn one judge agent via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `judge`

@@ -162,7 +162,7 @@ No owner assigned — workers self-claim.
 
 ## Step 7: Spawn Workers
 
-Spawn N worker agents via `Task` with:
+Spawn N worker agents via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `worker-{n}` (e.g., `worker-1`, `worker-2`)
@@ -179,7 +179,7 @@ Before spawning, check the worker role's `isolation` field:
   - Override `subagent_type` to `general-purpose`
   - Print a note: `Role {name}: using general-purpose (worktree
     isolation requires write access)`
-  - Pass `isolation: "worktree"` to the `Task` tool call
+  - Pass `isolation: "worktree"` to the `Agent` tool call
 - If `isolation` is absent: use the role's `subagent_type` as-is
 
 ### Prompt Construction

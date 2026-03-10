@@ -207,7 +207,7 @@ TeamCreate with team_name: "swarm-map-reduce-{goal-slug}-{ts}"
 
 ### Spawn Mappers
 
-For each chunk, spawn one mapper agent via `Task` with:
+For each chunk, spawn one mapper agent via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `mapper-{n}` (e.g., `mapper-1`, `mapper-2`)
@@ -224,7 +224,7 @@ Before spawning, check the map role's `isolation` field:
   - Override `subagent_type` to `general-purpose`
   - Print a note: `Role {name}: using general-purpose (worktree
     isolation requires write access)`
-  - Pass `isolation: "worktree"` to the `Task` tool call
+  - Pass `isolation: "worktree"` to the `Agent` tool call
 - If `isolation` is absent: use the role's `subagent_type` as-is
 
 #### Mapper Prompt Construction
@@ -265,7 +265,7 @@ The `prompt` field from `swarm-roles.yaml` for the map role.
 
 ### Spawn Reducer
 
-Spawn one reducer agent via `Task` with:
+Spawn one reducer agent via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `reducer`

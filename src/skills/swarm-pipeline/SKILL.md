@@ -212,7 +212,7 @@ lead claims and completes relay tasks as part of step 8.
 
 ## Step 7: Spawn Agents
 
-For each role in each stage/node, spawn one agent via `Task` with:
+For each role in each stage/node, spawn one agent via `Agent` with:
 
 - `team_name`: the team name from step 6
 - `name`: `{stage-name}-{role-name}` (e.g., `implement-implementer`)
@@ -231,7 +231,7 @@ Before spawning, check each role's `isolation` field:
   - Override `subagent_type` to `general-purpose`
   - Print a note: `Role {name}: using general-purpose (worktree
     isolation requires write access)`
-  - Pass `isolation: "worktree"` to the `Task` tool call
+  - Pass `isolation: "worktree"` to the `Agent` tool call
 - If `isolation` is absent: use the role's `subagent_type` as-is
 
 ### Prompt Construction
