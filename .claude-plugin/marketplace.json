@@ -14,11 +14,12 @@
       "description": "Multi-pattern orchestration for Claude Code — fan-out, swarm, pipeline, map-reduce, speculative, and watchdog patterns for concurrent review, analysis, implementation, and research",
       "category": "",
       "tags": ["swarm", "parallel", "specialists", "review", "orchestration", "teams", "claude-code"],
-      "source": "git-subdir",
-      "url": "ben-alkov/the_swarm",
-      "path": "src",
-      "ref": "main",
-      "sha": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"
+      "source": {
+        "url": "ben-alkov/the_swarm",
+        "source": "git-subdir",
+        "path": "src",
+        "ref": "v0.2.7"
+      }
     }
   ]
 }
