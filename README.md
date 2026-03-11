@@ -2,8 +2,8 @@
 
 A Claude Code plugin which orchestrates multiple agents in parallel. Define
 specialist roles, pick a pattern, and let the swarm work concurrently — review
-code from three angles at once, race competing implementations, or pipeline
-stages with dependency gates.
+code from three angles, race competing implementations, or chain stages with
+dependency gates.
 
 ## Requirements
 
@@ -24,18 +24,21 @@ claude plugin install the_swarm
 ```
 
 Claude reads the preset, spawns three specialists (security, performance,
-quality), collects their findings, and synthesizes a unified report — all in
-one command.
+quality), collects their findings, and synthesizes a report — all in one
+command.
 
 Presets, specialists, and even orchestration patterns (see below) are fully
 customizable, extensible, and composable (although the orchestration patterns
 generically cover a very large space).
 
-Want reviewer team members which are more tailored to your repo/stack/language?
-Tweak the `prompt` fields in `config/swarm-roles.yaml`
+### Tips
 
-Not even working on source code per se, but still want to use the_swarm? Create
-your own roles!
+- Jesse Vincent's [Superpowers][] works **unreasonably** well alongside
+  the_swarm. Prompt as you normally would, e.g.
+  `/using-superpowers Review PR #whatever. Use the swarm.`
+- Want reviewer team members that better fit your repo/stack/language? Tweak
+  the `prompt` fields in `config/swarm-roles.yaml`
+- Not working on source code? Create your own roles!
 
 ## Orchestration Patterns
 
@@ -52,7 +55,7 @@ has a distinct focus; the lead merges their findings into one report.
 
 ### Pipeline
 
-Sequential stages where each stage blocks the next. An implementer writes
+Stages run sequentially; each stage blocks the next. An implementer writes
 code in a worktree; reviewers evaluate the result only after implementation
 completes.
 
@@ -62,7 +65,7 @@ completes.
 
 ### Task Graph
 
-An arbitrary DAG of stages with `depends_on` edges. Supports fan-in (multiple
+An arbitrary DAG of stages with `depends_on` edges supports fan-in (multiple
 predecessors gate a single successor) and fan-out (one predecessor unblocks
 several successors).
 
@@ -73,8 +76,8 @@ several successors).
 ### Map-Reduce
 
 Split a large input into chunks, process each chunk in parallel, then merge
-all outputs. Mappers analyze independent partitions; a reducer teammate
-produces the unified result.
+all outputs. Mappers analyze independent partitions; a reducer produces the
+unified result.
 
 ```text
 > /swarm audit the codebase with large-codebase-audit preset
@@ -82,7 +85,7 @@ produces the unified result.
 
 ### Speculative
 
-Race competing implementations in isolated worktrees. A judge evaluates all
+Competing implementations race in isolated worktrees. A judge evaluates all
 approaches — runs tests, checks quality — and selects the winner.
 
 ```text
@@ -92,7 +95,7 @@ approaches — runs tests, checks quality — and selects the winner.
 ### Swarm (Self-Claiming Pool)
 
 Interchangeable workers claim tasks from a shared pool and loop until the pool
-empties. Unlike fan-out, the task pool can be larger than the worker count.
+empties. The task pool can be larger than the worker count.
 
 ```text
 > /swarm audit all modules with swarm-module-audit preset
@@ -100,8 +103,8 @@ empties. Unlike fan-out, the task pool can be larger than the worker count.
 
 ## Roles and Presets
 
-Roles define what each agent does. Presets bundle roles into ready-made
-configurations for common workflows.
+Roles define what each agent does. Presets bundle roles into configurations
+for common workflows.
 
 ### Built-in Roles
 
@@ -155,9 +158,9 @@ presets:
 
 ## Watchdog Monitoring
 
-Add `watchdog: true` to any preset to enable a watchdog monitor. The monitor
-polls the task list at a configurable interval and alerts the lead when tasks
-stall, fail, or run unbalanced.
+Add `watchdog: true` to any preset to enable the watchdog. The monitor polls
+the task list at a configurable interval and alerts the lead when tasks stall,
+fail, or become unevenly loaded.
 
 ```yaml
 presets:
@@ -179,7 +182,7 @@ Configure the polling interval in `.claude-plugin/settings.json`:
 Hook scripts enforce completion standards:
 
 - **TeammateIdle** — detects idle agents and escalates through nudge →
-  warning → hard stop after repeated idle cycles
+  warning → hard stop after repeated cycles
 - **TaskCompleted** — validates that completed tasks include findings
 - **WorktreeRemove** — cleans up counters when worktrees are removed
 
@@ -197,8 +200,8 @@ Hook scripts enforce completion standards:
 ### Team Naming
 
 Teams follow the format `swarm-{pattern}-{goal-slug}-{timestamp}`. The goal
-slug comes from the user's description: lowercased, special characters replaced
-with hyphens, truncated to 30 characters.
+slug derives from the user's description: Claude lowercases it, replaces
+special characters with hyphens, and truncates to 30 characters.
 
 ## Project Structure
 
@@ -228,3 +231,4 @@ src/
 GPL-3.0
 
 [Claude Code]: https://docs.anthropic.com/en/docs/claude-code
+[Superpowers]: https://github.com/obra/superpowers
