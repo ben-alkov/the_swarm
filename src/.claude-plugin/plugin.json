@@ -9,7 +9,5 @@
   "homepage": "https://github.com/ben-alkov/the_swarm",
   "repository": "https://github.com/ben-alkov/the_swarm",
   "license": "GPL3",
-  "keywords": ["swarm", "parallel", "specialists", "review", "orchestration", "teams"],
-  "hooks": "./hooks/hooks.json",
-  "skills": "./skills/"
+  "keywords": ["swarm", "parallel", "specialists", "review", "orchestration", "teams"]
 }
