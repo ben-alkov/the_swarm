@@ -13,7 +13,8 @@ stages with dependency gates.
 ## Installation
 
 ```bash
-claude plugin install the_swarm@ben-alkov/the_swarm@main
+claude plugin marketplace add ben-alkov/the_swarm
+claude plugin install the_swarm
 ```
 
 ## Quick Start
