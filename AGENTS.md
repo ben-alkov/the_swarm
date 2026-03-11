@@ -1,4 +1,4 @@
-<!-- markdownlint-disable link-image-style -->
+<!-- markdownlint-disable link-image-style line-length -->
 
 # the_swarm
 
@@ -9,28 +9,31 @@ with Markdown, YAML, Bash, and JSON.
 
 ## Structure
 
-- `skills/` - orchestration pattern skill definitions (one subdir per pattern)
-- `config/` - role definitions, presets, and usage examples (`swarm-roles.yaml`)
-- `hooks/` - quality-gate shell scripts for TeammateIdle/TaskCompleted events
-- `.claude-plugin/` - plugin identity and marketplace metadata
+- `src/skills/` - orchestration pattern skill definitions (one subdir per pattern)
+- `src/config/` - role definitions, presets, and usage examples (`swarm-roles.yaml`)
+- `src/hooks/` - quality-gate shell scripts for TeammateIdle/TaskCompleted events
+- `src/.claude-plugin/` - plugin identity and metadata
 
 ## Key Files
 
-- Plugin manifest: `.claude-plugin/plugin.json`
-- Role and preset definitions: `config/swarm-roles.yaml`
-- Dispatcher entry point: `skills/swarm/SKILL.md`
-- Hook event bindings: `hooks/hooks.json`
-- Pattern extraction: `hooks/scripts/lib/pattern-detect.sh`
-- Usage examples: `config/examples/`
+- Plugin manifest: `src/.claude-plugin/plugin.json`
+- Role and preset definitions: `src/config/swarm-roles.yaml`
+- Dispatcher entry point: `src/skills/swarm/SKILL.md`
+- Hook event bindings: `src/hooks/hooks.json`
+- Pattern extraction: `src/hooks/scripts/lib/pattern-detect.sh`
+- Read from user settings: `src/hooks/scripts/lib/read-setting.sh`
+- Usage examples: `src/config/examples/`
 
 ## CI Commands
 
 ```bash
-jsonlint inputfile.json  # https://github.com/dmeranda/demjson
+jsonlint src/hooks/hooks.json  # https://github.com/dmeranda/demjson
 markdownlint-cli2 **/*.md  # https://github.com/DavidAnson/markdownlint-cli2
 shellcheck hooks/scripts/**/*.sh  # https://www.shellcheck.net
-yamllint config/  # https://github.com/adrienverge/yamllint
+yamllint config/swarm-roles.yaml  # https://github.com/adrienverge/yamllint
 ```
+
+These are examples; use other invocations if needed.
 
 ## Critical Context
 
