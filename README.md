@@ -14,7 +14,7 @@ dependency gates.
 
 ```bash
 claude plugin marketplace add ben-alkov/the_swarm
-claude plugin install the_swarm
+claude plugin install the-swarm
 ```
 
 ## Quick Start
