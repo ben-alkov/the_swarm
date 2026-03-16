@@ -1,0 +1,80 @@
+{
+  "config": {
+    "default": true,
+    "MD003": {
+      "style": "atx"
+    },
+    "MD004": {
+      "style": "dash"
+    },
+    "MD009": {
+      "br_spaces": 0,
+      "strict": true
+    },
+    "MD013": {
+      "code_blocks": false,
+      "stern": true,
+      "tables": false
+    },
+    "MD026": {
+      "punctuation": "_.,-;:。，；：*"
+    },
+    "MD027": {
+      "list_items": false
+    },
+    "MD029": {
+      "style": "ordered"
+    },
+    "MD033": {
+      "allowed_elements": [
+        "details",
+        "summary",
+        "em",
+        "strong"
+      ]
+    },
+    "MD035": {
+      "style": "---"
+    },
+    "MD036": false,
+    "MD040": {
+      "language_only": true
+    },
+    "MD046": {
+      "style": "fenced"
+    },
+    "MD047": true,
+    "MD048": {
+      "style": "backtick"
+    },
+    "MD049": {
+      "style": "asterisk"
+    },
+    "MD050": {
+      "style": "asterisk"
+    },
+    "MD054": {
+      "autolink": false,
+      "inline": false,
+      "full": false,
+      "collapsed": true,
+      "shortcut": false,
+      "url_inline": false
+    },
+    "MD055": {
+      "style": "leading_and_trailing"
+    },
+    "MD059": {
+      "prohibited_texts": [
+        "click",
+        "click here",
+        "here",
+        "link",
+        "more",
+        "this",
+        "see"
+      ]
+    },
+    "no-hard-tabs": true
+  }
+}
