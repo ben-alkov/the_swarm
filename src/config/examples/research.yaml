@@ -5,6 +5,7 @@
 # Define ad-hoc roles for parallel research on different aspects
 # of a topic.
 
+---
 roles:
   auth-patterns:
     description: "Research authentication implementation patterns"

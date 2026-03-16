@@ -7,6 +7,7 @@
 # Optional plan approval gates ensure approaches stay distinct before
 # implementation begins.
 
+---
 preset: best-of-three
 
 # Preset definition (in swarm-roles.yaml):

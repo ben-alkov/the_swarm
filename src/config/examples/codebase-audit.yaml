@@ -5,6 +5,7 @@
 # Dispatches four specialists for a comprehensive codebase audit
 # covering security, performance, quality, and architecture.
 
+---
 preset: full-review
 # Narrow scope to specific directories (optional):
 # target: "src/"

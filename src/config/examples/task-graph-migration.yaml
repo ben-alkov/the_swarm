@@ -9,6 +9,7 @@
 #   analyze ──→ migrate-users ──→ validate
 #          └──→ migrate-orders ──↗
 
+---
 preset: multi-stage-migration
 
 # Preset definition (in swarm-roles.yaml):

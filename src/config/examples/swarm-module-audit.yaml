@@ -6,4 +6,5 @@
 # from a shared task pool. Workers loop until all modules are covered.
 # Good for large codebases with many similar-sized modules.
 
+---
 preset: swarm-module-audit

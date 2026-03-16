@@ -6,6 +6,7 @@
 # spawns a mapper per chunk, and a dedicated reducer merges all outputs.
 # The reducer is blocked until all mappers complete.
 
+---
 preset: large-codebase-audit
 
 # Preset definition (in swarm-roles.yaml):
