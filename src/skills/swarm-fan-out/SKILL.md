@@ -32,7 +32,8 @@ present. No file edits, no implementation — analysis only.
 - Single-perspective tasks (use a regular agent instead)
 - Sequential dependencies between workers
 - Simple questions or explorations
-- Tasks requiring file edits without `isolation: worktree` configured on the role
+- Tasks requiring file edits without `isolation: worktree` configured on the
+  role
 - A team already exists in the current session
 
 ## Checklist

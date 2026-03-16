@@ -14,6 +14,7 @@ fi
 
 PATTERN_RE='^swarm-(fan-out|swarm|pipeline|task-graph'
 PATTERN_RE+='|map-reduce|speculative)-'
+# shellcheck disable=SC2034  # PATTERN is used by sourcing scripts
 if [[ "$TEAM_NAME" =~ $PATTERN_RE ]]; then
   PATTERN="${BASH_REMATCH[1]}"
 else
