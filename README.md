@@ -226,9 +226,46 @@ src/
     └── swarm-swarm/         # Self-claiming pool pattern
 ```
 
+## Contributing
+
+Fork the repo and open a PR against `main`. Rebase-only — no merge commits.
+
+Interactive rebase before submitting is not just OK, it's preferred. Squash
+fixups, reorder for narrative clarity, write clean commit messages. Reviewers
+read commit history; make it worth reading.
+
+### Running CI locally
+
+Install [gh act][] to run the same GitHub Actions jobs locally:
+
+```bash
+gh extension install https://github.com/nektos/gh-act
+gh act -l          # list available jobs
+gh act --job yaml  # run a specific job
+```
+
+Or run linters directly:
+
+```bash
+jq src/hooks/hooks.json 2>&1 >/dev/null
+markdownlint-cli2 src/{,**/}*.md
+shellcheck -x src/hooks/scripts/**/*.sh
+yq --exit-status 'tag == "!!map" or tag == "!!seq"' src/config/*.yaml >/dev/null
+yamlfmt -lint src/config/
+```
+
+To auto-format YAML locally: `yamlfmt src/config/`
+
+### Commit messages
+
+Follow [Conventional Commits][]. Subject line in imperative mood, body explains
+*why* not *how*. See `AGENTS.md` for the full format.
+
 ## License
 
 GPL-3.0
 
+[gh act]: https://github.com/nektos/act
 [Claude Code]: https://docs.anthropic.com/en/docs/claude-code
+[Conventional Commits]: https://www.conventionalcommits.org
 [Superpowers]: https://github.com/obra/superpowers
