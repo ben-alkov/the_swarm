@@ -1,0 +1,90 @@
+name: Linters
+
+on:
+  pull_request:
+
+  push:
+    branches:
+      - master
+
+jobs:
+
+  json:
+    name: jqlint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run jq  # If jq can't parse the file, it's invalid
+        shell: bash
+        run: |
+          shopt -s globstar
+          status=0
+            for f in {,**/}.claude-plugin/*.json src/hooks/hooks.json; do
+              if ! err=$(jq . "$f" 2>&1 >/dev/null); then
+                echo "FAIL: $f"
+                echo "$err" >&2
+                status=1
+              fi
+            done
+          exit $status
+
+  markdown:
+    name: markdownlint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          config: '.markdownlint-cli2.jsonc'
+          globs: 'src/{,**/}*.md'
+
+  shell:
+    name: shellcheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install ShellCheck
+        run: command -v shellcheck || sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        working-directory: src/hooks/scripts
+        run: |
+          shopt -s globstar
+          shellcheck -x **/*.sh
+
+  yaml:
+    name: yaml check & format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check YAML validity
+        uses: mikefarah/yq@v4.52.4
+        with:
+          cmd: yq --exit-status 'tag == "!!map" or tag == "!!seq"' src/config/*.yaml > /dev/null
+
+      - name: Check YAML formatting
+        uses: yk-lab/yamlfmt-action@v1
+        with:
+          version: v0.21.0
+          path: src/config/
