@@ -6,6 +6,7 @@
 # then reviewers evaluate the result. The review stage is blocked
 # until implementation completes.
 
+---
 preset: implement-then-review
 
 # Preset definition (in swarm-roles.yaml):

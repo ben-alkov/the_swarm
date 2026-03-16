@@ -5,6 +5,7 @@
 # Implementer/judge/reducer roles inherit the parent model (typically
 # opus) since they produce code or make consequential decisions.
 
+---
 roles:
   security-reviewer:
     description: "Review code for security vulnerabilities"
@@ -208,7 +209,9 @@ presets:
     roles: [security-reviewer]
 
   implement-and-review:
-    description: "DEPRECATED — reviewer runs concurrently and sees pre-change code. Use implement-then-review instead."
+    description: |
+      "DEPRECATED — reviewer runs concurrently and sees pre-change code.
+      Use implement-then-review instead."
     deprecated: true
     successor: implement-then-review
     pattern: fan-out
