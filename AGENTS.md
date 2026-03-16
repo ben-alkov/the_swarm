@@ -24,16 +24,33 @@ with Markdown, YAML, Bash, and JSON.
 - Read from user settings: `src/hooks/scripts/lib/read-setting.sh`
 - Usage examples: `src/config/examples/`
 
-## CI Commands
+## CI
 
-```bash
-jsonlint src/hooks/hooks.json  # https://github.com/dmeranda/demjson
-markdownlint-cli2 **/*.md  # https://github.com/DavidAnson/markdownlint-cli2
-shellcheck hooks/scripts/**/*.sh  # https://www.shellcheck.net
-yamllint config/swarm-roles.yaml  # https://github.com/adrienverge/yamllint
-```
+This repo has GitHub Actions for CI; see below for instructions for running
+actions locally using [`act`][].
 
-These are examples; use other invocations if needed.
+## Directly run linters
+
+  ```bash
+  jq src/hooks/hooks.json 2>&1 >/dev/null  # If jq can't parse the file, it's invalid
+  markdownlint-cli2 src/{,**/}*.md  # https://github.com/DavidAnson/markdownlint-cli2
+  shellcheck -x src/hooks/scripts/**/*.sh  # https://github.com/koalaman/shellcheck
+  yq --exit-status 'tag == "!!map" or tag == "!!seq"' src/config/*.yaml >/dev/null  # https://github.com/mikefarah/yq
+  yamlfmt -lint src/config/  # https://github.com/google/yamlfmt
+  yamlfmt src/config/  # format in place (local only, not in CI)
+  ```
+
+  N.B. These are examples; use other invocations if needed.
+
+## Or check for `gh act`, install it if missing
+
+  `gh extension install https://github.com/nektos/gh-act`
+
+  and use it to run the actual GitHub Action jobs
+
+  e.g. `gh act --job "yaml"`
+
+  Use `gh act -l` to discover the available job IDs.
 
 ## Critical Context
 
@@ -45,3 +62,5 @@ These are examples; use other invocations if needed.
 ## More Info
 
 See [BOOKMARKS.md](BOOKMARKS.md) for architecture docs and usage examples.
+
+[`act`]: https://github.com/nektos/act
