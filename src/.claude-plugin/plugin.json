@@ -1,7 +1,7 @@
 {
   "name": "the-swarm",
   "description": "Multi-pattern orchestration for Claude Code — fan-out, swarm, pipeline, map-reduce, speculative, and watchdog patterns for concurrent review, analysis, implementation, and research",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "author": {
     "name": "Ben Alkov",
     "url": "https://github.com/ben-alkov"
