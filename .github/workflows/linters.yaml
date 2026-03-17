@@ -84,7 +84,7 @@ jobs:
           cmd: yq --exit-status 'tag == "!!map" or tag == "!!seq"' src/config/*.yaml > /dev/null
 
       - name: Check YAML formatting
-        uses: yk-lab/yamlfmt-action@v1
+        uses: yk-lab/yamlfmt-action@v1.0.0
         with:
           version: v0.21.0
           path: src/config/
