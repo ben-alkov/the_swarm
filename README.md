@@ -263,7 +263,7 @@ Follow [Conventional Commits][]. Subject line in imperative mood, body explains
 
 ## License
 
-GPL-3.0
+[GPL-v3-or-later](./GPLv3.txt) + [GURA](./Geographic Use Restriction Addendum v1.txt)
 
 [gh act]: https://github.com/nektos/act
 [Claude Code]: https://docs.anthropic.com/en/docs/claude-code
