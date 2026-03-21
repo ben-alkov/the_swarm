@@ -1,0 +1,22 @@
+the_swarm: Claude Code plugin for multi-pattern multi-agent orchestration, using
+CC's built in Agent Swarm as the engine
+
+Copyright (C) 2026  Ben Alkov
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+N.B.that the entirety of the Geographic-Use-Restriction-Addendum
+https://github.com/agelesslinux/Geographic-Use-Restriction-Addendum (a copy of
+which is included in this repo) is herewith included verbatim, and shall be
+considered part and parcel of the complete license of the contents of this repo.
