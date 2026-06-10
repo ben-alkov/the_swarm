@@ -79,7 +79,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check YAML validity
-        uses: mikefarah/yq@v4.52.4
+        uses: mikefarah/yq@v4.53.3
         with:
           cmd: yq --exit-status 'tag == "!!map" or tag == "!!seq"' src/config/*.yaml > /dev/null
 
